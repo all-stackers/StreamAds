@@ -10,6 +10,7 @@ class Campaign(Resource):
         parser.add_argument("campaign_name", type=str, required=True)
         parser.add_argument("campaign_description", type=str, required=True)
         parser.add_argument("company_name", type=str, required=True)
+        parser.add_argument("media_type", type=str, required=True)
         parser.add_argument("media_url", type=str, required=True)
         parser.add_argument("start_time", type=str, required=True)
         parser.add_argument("end_time", type=str, required=True)
@@ -56,6 +57,7 @@ class Campaign(Resource):
                 "company_logo": company_data["company_logo"],
                 "company_twitter": company_data["company_twitter"],
                 "company_website": company_data["company_website"],
+                "media_type": campaign_data["media_type"],
                 "media_url": campaign_data["media_url"],
                 "start_time": campaign_data["start_time"],
                 "end_time": campaign_data["end_time"],
@@ -92,6 +94,7 @@ class Campaign(Resource):
                     "company_logo": company_data["company_logo"],
                     "company_twitter": company_data["company_twitter"],
                     "company_website": company_data["company_website"],
+                    "media_type": campaign["media_type"],
                     "media_url": campaign["media_url"],
                     "start_time": campaign["start_time"],
                     "end_time": campaign["end_time"],
@@ -128,6 +131,7 @@ class Campaign(Resource):
                     "company_logo": company_data["company_logo"],
                     "company_twitter": company_data["company_twitter"],
                     "company_website": company_data["company_website"],
+                    "media_type": campaign["media_type"],
                     "media_url": campaign["media_url"],
                     "start_time": campaign["start_time"],
                     "end_time": campaign["end_time"],
