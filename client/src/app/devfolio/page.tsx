@@ -1,13 +1,34 @@
-
 "use client";
-import Head from 'next/head';
-import { FaLink, FaTwitter } from 'react-icons/fa';
-import React, { useState, useEffect } from 'react';
+import Head from "next/head";
+import { FaLink, FaTwitter } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+
+interface CampaignDetails {
+  campaign_id: string;
+  campaign_name: string;
+  campaign_description: string;
+  company_name: string;
+  company_logo?: string;
+  company_twitter?: string;
+  company_website?: string;
+  media_url: string;
+  start_time: string;
+  end_time: string;
+  payout_time: string;
+  prize_pool: number;
+  post: string;
+  likes: string;
+  minimum_likes?: number;
+  followers: string;
+  minimum_followers?: number;
+  participants?: string[];
+}
 
 
- 
 const devfolio = () => {
-  const calculateTimeLeft = (endTime: number): { hours: number; minutes: number; seconds: number } => {
+  const calculateTimeLeft = (
+    endTime: number
+  ): { hours: number; minutes: number; seconds: number } => {
     const now = new Date().getTime();
     const distance = endTime - now;
 
@@ -15,7 +36,9 @@ const devfolio = () => {
       return { hours: 0, minutes: 0, seconds: 0 };
     }
 
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const hours = Math.floor(
+      (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+    );
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
@@ -23,8 +46,28 @@ const devfolio = () => {
   };
 
   // Set endTime to 2 days (48 hours) from now
-  const [endTime, setEndTime] = useState(new Date().getTime() + 1000 * 60 * 60 * 48); // 2 days from now
+  const [endTime, setEndTime] = useState(
+    new Date().getTime() + 1000 * 60 * 60 * 48
+  ); // 2 days from now
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(endTime));
+  const [campaignDetails, setCampaignDetails] = useState<CampaignDetails | undefined>(undefined);
+
+  const getCampaignDetails = async (): Promise<void> => {
+    const requestOptions: RequestInit = {
+        method: "GET",
+        redirect: "follow"
+    };
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/campaign?campaign_id=0001", requestOptions);
+        const result = await response.json();
+        const parsedResult = JSON.parse(result.data)
+        console.log(parsedResult)
+        setCampaignDetails(parsedResult)
+    } catch (error) {
+        console.error(error);
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -34,22 +77,27 @@ const devfolio = () => {
     return () => clearInterval(interval);
   }, [endTime]);
 
+  useEffect(() => {
+    getCampaignDetails();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      {/* <Head>
-        <title>ETH Seoul 2022 Hackathon</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head> */}
-
       <main className="max-w-4xl mx-auto">
-      <div className="flex justify-between mb-8 h-auto">
-  <div className="flex-1 flex items-stretch">
-    <div className="bg-black text-white p-6 rounded-lg flex-grow mr-3 max-w-[600px] h-[250px]">
-      <img src="web3.jpg" alt="ETH Seoul" className="w-full h-full object-cover rounded-lg" />
-    </div>
+        <div className="mb-[10px]">{campaignDetails?.campaign_name}</div>
+        <div className="mb-[20px]">{campaignDetails?.company_name}</div>
+        <div className="flex justify-between mb-8 h-auto">
+          <div className="flex-1 flex items-stretch">
+            <div className="bg-black text-white p-6 rounded-lg flex-grow mr-3 max-w-[600px] h-[250px]">
+              <img
+                src="web3.jpg"
+                alt="ETH Seoul"
+                className="w-full h-full object-cover rounded-lg"
+              />
+            </div>
 
-    {/* Uncomment this section if needed */}
-    {/* <div className="bg-black text-white mr-3 p-6 rounded-lg flex-grow w-[500px]">
+            {/* Uncomment this section if needed */}
+            {/* <div className="bg-black text-white mr-3 p-6 rounded-lg flex-grow w-[500px]">
      
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -69,59 +117,72 @@ const devfolio = () => {
         </div>
       </div>
     </div> */}
-   
-  </div>
+          </div>
 
-  <div className="bg-white p-4 rounded-lg shadow-md w-64 flex flex-col justify-between">
-    <div className="flex space-x-4 ml-3">
-      <div className="bg-blue-100 text-blue-500 p-2 rounded-full border border-transparent hover:border-blue-700 transition">
-        <FaLink size={15} />
-      </div>
-      <div className="bg-blue-100 text-blue-500 p-2 rounded-full border border-transparent hover:border-blue-700 transition">
-        <FaTwitter size={15} />
-      </div>
-    </div>
-    <div className="bg-white-100 border h-20 border-white rounded-lg py-3 p-4 flex items-center">
-      <div className="border-l-4 border-blue-500 rounded-lg h-full mr-3"></div>
-      <div>
-        <div className="text-xs text-gray-400 font-bold mb-1 tracking-wide">RUNS FROM</div>
-        <div className="text-sm font-semibold">Aug 5 - 13, 2022</div>
-      </div>
-    </div>
+          <div className="bg-white p-4 rounded-lg shadow-md w-64 flex flex-col justify-between">
+            <div className="flex space-x-4 ml-3">
+              <div className="bg-blue-100 text-blue-500 p-2 rounded-full border border-transparent hover:border-blue-700 transition">
+                <FaLink size={15} />
+              </div>
+              <div className="bg-blue-100 text-blue-500 p-2 rounded-full border border-transparent hover:border-blue-700 transition">
+                <FaTwitter size={15} />
+              </div>
+            </div>
+            <div className="bg-white-100 border h-20 border-white rounded-lg py-3 p-4 flex items-center">
+              <div className="border-l-4 border-blue-500 rounded-lg h-full mr-3"></div>
+              <div>
+                <div className="text-xs text-gray-400 font-bold mb-1 tracking-wide">
+                  RUNS FROM
+                </div>
+                <div className="text-sm font-semibold">Aug 5 - 13, 2022</div>
+              </div>
+            </div>
 
-    <div className="mt-2 bg-gray-200 border h-20 border-gray-300 rounded-lg p-4">
-      <div className="text-xs text-gray-400 font-bold mb-2">
-        APPLICATIONS CLOSES IN
-      </div>
-      <div className="text-md font-semibold mt-3">
-        {`${timeLeft.hours.toString().padStart(2, '0')}:${timeLeft.minutes.toString().padStart(2, '0')}:${timeLeft.seconds.toString().padStart(2, '0')}`}
-      </div>
-    </div>
-    
-    <div className='mt-4'>
-      <button className="bg-blue-500 text-white rounded px-4 py-2 w-full">
-        See projects
-      </button>
-    </div>
-  </div>
-</div>
+            <div className="mt-2 bg-gray-200 border h-20 border-gray-300 rounded-lg p-4">
+              <div className="text-xs text-gray-400 font-bold mb-2">
+                APPLICATIONS CLOSES IN
+              </div>
+              <div className="text-md font-semibold mt-3">
+                {`${timeLeft.hours
+                  .toString()
+                  .padStart(2, "0")}:${timeLeft.minutes
+                  .toString()
+                  .padStart(2, "0")}:${timeLeft.seconds
+                  .toString()
+                  .padStart(2, "0")}`}
+              </div>
+            </div>
 
+            <div className="mt-4">
+              <button className="bg-blue-500 text-white rounded px-4 py-2 w-full">
+                See projects
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">
             Join us for ETH Seoul August 5-7 IRL & 8-13 Virtually!
           </h2>
 
-          <h3 className="font-semibold mt-4 mb-2">ETHSeoul Hackathon Pre-registration</h3>
+          <h3 className="font-semibold mt-4 mb-2">
+            ETHSeoul Hackathon Pre-registration
+          </h3>
           <ul className="list-disc list-inside mb-4">
-            <li>Please note that every hackathon participant should register via Devfolio. This registration is different with the conference ticket.</li>
+            <li>
+              Please note that every hackathon participant should register via
+              Devfolio. This registration is different with the conference
+              ticket.
+            </li>
           </ul>
 
           <h3 className="font-semibold mt-4 mb-2">Hackathon Day 1</h3>
           <ul className="list-disc list-inside mb-4">
             <li>Venue: Maru 180, 180 Yeoksam-ro, Gangnam-gu, Seoul</li>
             <li>Date: 2022/08/05 18:00 KST</li>
-            <li>Schedule:
+            <li>
+              Schedule:
               <ul className="list-disc list-inside ml-4">
                 <li>18:00 - 19:00: Registration</li>
                 <li>19:00 - 19:15: Opening Ceremony</li>
@@ -131,9 +192,8 @@ const devfolio = () => {
               </ul>
             </li>
           </ul>
-
         </div>
-        <div className='bg-white p-6 rounded-lg shadow-md mt-5 '>
+        <div className="bg-white p-6 rounded-lg shadow-md mt-5 ">
           <div className="text-center">
             <h2 className="text-[48px] text-[#273339] font-[800] p-3">
               $ 123,234.45
@@ -142,13 +202,10 @@ const devfolio = () => {
               Available Prizes
             </h3>
           </div>
-
         </div>
-
       </main>
-
     </div>
-  )
-}
+  );
+};
 
-export default devfolio
+export default devfolio;

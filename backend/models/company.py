@@ -32,6 +32,6 @@ class Company(db.Document):
     def get_company(cls, company_name):
         try:
             company = cls.objects(company_name=company_name).first()
-            return {'error': False, 'data': company.to_json()}
+            return {'error': False, 'data': company}
         except Exception as e:
             return {'error': True, 'message': str(e)}
