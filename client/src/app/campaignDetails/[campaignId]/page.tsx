@@ -394,7 +394,7 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
               )}
               {campaignDetails.likes == "yes" && (
                 <li>
-                  Get minimum {campaignDetails.minimum_likes} on your post.
+                  Get minimum {campaignDetails.minimum_likes} likes on your post.
                 </li>
               )}
             </ul>
