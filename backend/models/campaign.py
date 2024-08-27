@@ -7,6 +7,7 @@ class Campaign(db.Document):
     company_name = db.StringField(required=True)
     media_type = db.StringField(required=True)
     media_url = db.StringField(required=True)
+    caption = db.StringField(required=True)
     start_time = db.StringField(required=True)
     end_time = db.StringField(required=True)
     payout_time = db.StringField(required=True)
@@ -28,6 +29,7 @@ class Campaign(db.Document):
                 company_name=args["company_name"],
                 media_type=args["media_type"],
                 media_url=args["media_url"],
+                caption=args["caption"],
                 start_time=args["start_time"],
                 end_time=args["end_time"],
                 payout_time=args["payout_time"],

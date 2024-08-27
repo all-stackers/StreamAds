@@ -377,7 +377,7 @@ const Campaigns = () => {
                   </CardContent>
 
                   <CardFooter>
-                    <Button className="w-full rounded-[10px]">See More</Button>
+                    <Button className="w-full rounded-[10px]" onClick={() => navigate(campaign.campaign_id)}>See More</Button>
                   </CardFooter>
                 </Card>
               ))}
