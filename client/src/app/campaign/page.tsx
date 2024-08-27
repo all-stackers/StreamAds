@@ -109,7 +109,7 @@ const Campaigns = () => {
   };
 
   const navigate = (campaignId: string) => {
-    router.push(`/devfolio/${campaignId}`);
+    router.push(`/campaignDetails/${campaignId}`);
   }
 
   return (
