@@ -265,7 +265,7 @@ const Campaigns = () => {
               <Button
                 className="flex items-center gap-x-[10px] text-[16px] text-[#3770ff] font-[500] bg-[#b3ceff] rounded-[10px] hover:bg-blue-500 hover:text-white"
                 onClick={() => {
-                  router.push("/organization/create");
+                  router.push("/campaign/create");
                 }}
               >
                 Create Campaign
