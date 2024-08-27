@@ -45,6 +45,8 @@ interface CampaignDetails {
   followers: string;
   minimum_followers?: number;
   participants?: string[];
+  media_type: string;
+  caption: string;
 }
 
 const devfolio = ({ params }: { params: { campaignId: string } }) => {
