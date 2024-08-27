@@ -33,6 +33,7 @@ class Campaign(Resource):
     
     def get(self):
         campaign_id = request.args.get("campaign_id")
+        company_name = request.args.get("company_name")
         
         if campaign_id:
             response = CampaignModel.get_campaign(campaign_id)
@@ -67,6 +68,42 @@ class Campaign(Resource):
                 "minimum_followers": campaign_data["minimum_followers"],
                 "participants": campaign_data["participants"]
             }
+
+            return {"error": False, "data": json.dumps(data)}, 200
+
+        elif company_name:
+            response = CampaignModel.get_campaigns_by_company(company_name)
+            if response["error"]:
+                return {"error": True, "data": response["data"]}, 400
+            
+            data = []
+            for campaign in response["data"]:
+                response = CompanyModel.get_company(campaign['company_name'])
+                if response["error"]:
+                    return {"error": True, "data": response["data"]}, 400
+                
+                company_data = response["data"]
+
+                data.append({
+                    "campaign_id": campaign["campaign_id"],
+                    "campaign_name": campaign["campaign_name"],
+                    "campaign_description": campaign["campaign_description"],
+                    "company_name": campaign["company_name"],
+                    "company_logo": company_data["company_logo"],
+                    "company_twitter": company_data["company_twitter"],
+                    "company_website": company_data["company_website"],
+                    "media_url": campaign["media_url"],
+                    "start_time": campaign["start_time"],
+                    "end_time": campaign["end_time"],
+                    "payout_time": campaign["payout_time"],
+                    "prize_pool": campaign["prize_pool"],
+                    "post": campaign["post"],
+                    "likes": campaign["likes"],
+                    "minimum_likes": campaign["minimum_likes"],
+                    "followers": campaign["followers"],
+                    "minimum_followers": campaign["minimum_followers"],
+                    "participants": campaign["participants"]
+                })
 
             return {"error": False, "data": json.dumps(data)}, 200
 

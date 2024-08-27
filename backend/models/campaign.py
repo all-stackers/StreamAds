@@ -62,6 +62,15 @@ class Campaign(db.Document):
             return {'error': True, 'data': str(e)}
         
     @classmethod
+    def get_campaigns_by_company(cls, company_name):
+        try:
+            campaigns = cls.objects(company_name=company_name)
+            return {'error': False, 'data': campaigns}
+
+        except Exception as e:
+            return {'error': True, 'data': str(e)}
+        
+    @classmethod
     def add_participant(cls, args):
         try:
             campaign = cls.objects(campaign_id=args["campaign_id"]).first()
