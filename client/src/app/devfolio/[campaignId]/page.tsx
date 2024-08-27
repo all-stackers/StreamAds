@@ -3,6 +3,7 @@ import Head from "next/head";
 import { FaLink, FaTwitter } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import { format } from 'date-fns';
+import { useRouter } from 'next/navigation'
 
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import {
@@ -45,7 +46,8 @@ interface CampaignDetails {
   participants?: string[];
 }
 
-const devfolio = () => {
+const devfolio = ({ params }: { params: { campaignId: string } }) => {
+  const router = useRouter()
   const [steps, setSteps] = useState<number>(0);
 const post = {
   type: "image",
@@ -92,7 +94,7 @@ const [campaignDetails, setCampaignDetails] = useState<
   CampaignDetails | undefined
 >(undefined);
 
-const getCampaignDetails = async (): Promise<void> => {
+const getCampaignDetails = async (campaignId: string): Promise<void> => {
   const requestOptions: RequestInit = {
     method: "GET",
     redirect: "follow",
@@ -100,7 +102,7 @@ const getCampaignDetails = async (): Promise<void> => {
 
   try {
     const response = await fetch(
-      "http://127.0.0.1:5000/campaign?campaign_id=0001",
+      `http://127.0.0.1:5000/campaign?campaign_id=${campaignId}`,
       requestOptions
     );
     const result = await response.json();
@@ -245,8 +247,10 @@ useEffect(() => {
   ];
 
   useEffect(() => {
-    getCampaignDetails();
-  }, []);
+    if (params.campaignId) {
+      getCampaignDetails(params.campaignId);
+    }
+  }, [params.campaignId]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -331,7 +335,7 @@ useEffect(() => {
 
             <div className="flex w-[40%] bg-black rounded-[10px] justify-center items-center">
               <img
-                src="web3.jpg"
+                src="/web3.jpg"
                 alt="ETH Seoul"
                 className="h-full rounded-lg"
               />

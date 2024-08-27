@@ -30,7 +30,7 @@ class Campaign(Resource):
         if response["error"]:
             return {"error": True, "data": response["data"]}, 400
         
-        return {"error": False, "data": response["data"]}, 201
+        return {"error": False, "data": args["campaign_id"]}, 201
     
     def get(self):
         campaign_id = request.args.get("campaign_id")
