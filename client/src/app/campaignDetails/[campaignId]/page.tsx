@@ -2,8 +2,9 @@
 import Head from "next/head";
 import { FaLink, FaTwitter } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
-import { format } from 'date-fns';
-import { useRouter } from 'next/navigation'
+import { format } from "date-fns";
+import { useRouter } from "next/navigation";
+import { ScaleLoader } from "react-spinners";
 
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import {
@@ -47,87 +48,89 @@ interface CampaignDetails {
 }
 
 const devfolio = ({ params }: { params: { campaignId: string } }) => {
-  const router = useRouter()
+  const router = useRouter();
   const [steps, setSteps] = useState<number>(0);
-const post = {
-  type: "image",
-  caption: "This is a sample caption for the post.",
-  file: "/web3.jpg",
-};
-
-const highlightHashtags = (text: string) => {
-  const regex = /#\w+/g;
-  return text.split(regex).map((part, index) => {
-    const match = text.match(regex)?.[index];
-    return (
-      <React.Fragment key={index}>
-        {part}
-        {match && <span className="text-blue-500">{match}</span>}
-      </React.Fragment>
-    );
-  });
-};
-
-const calculateTimeLeft = (
-  endTime: number
-): { days: number; hours: number; minutes: number; seconds: number } => {
-  const now = new Date().getTime();
-  const distance = endTime - now;
-
-  if (distance < 0) {
-    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-  }
-
-  const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-  return { days, hours, minutes, seconds };
-};
-
-const [endTime, setEndTime] = useState(
-  new Date().getTime() + 1000 * 60 * 60 * 48
-); // 2 days from now
-const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(endTime));
-const [campaignDetails, setCampaignDetails] = useState<
-  CampaignDetails | undefined
->(undefined);
-
-const getCampaignDetails = async (campaignId: string): Promise<void> => {
-  const requestOptions: RequestInit = {
-    method: "GET",
-    redirect: "follow",
+  const post = {
+    type: "image",
+    caption: "This is a sample caption for the post.",
+    file: "/web3.jpg",
   };
 
-  try {
-    const response = await fetch(
-      `http://127.0.0.1:5000/campaign?campaign_id=${campaignId}`,
-      requestOptions
+  const highlightHashtags = (text: string) => {
+    const regex = /#\w+/g;
+    return text.split(regex).map((part, index) => {
+      const match = text.match(regex)?.[index];
+      return (
+        <React.Fragment key={index}>
+          {part}
+          {match && <span className="text-blue-500">{match}</span>}
+        </React.Fragment>
+      );
+    });
+  };
+
+  const calculateTimeLeft = (
+    endTime: number
+  ): { days: number; hours: number; minutes: number; seconds: number } => {
+    const now = new Date().getTime();
+    const distance = endTime - now;
+
+    if (distance < 0) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(
+      (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
     );
-    const result = await response.json();
-    const parsedResult = JSON.parse(result.data);
-    console.log(parsedResult);
-    setCampaignDetails(parsedResult);
-  } catch (error) {
-    console.error(error);
-  }
-};
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-useEffect(() => {
-  if (campaignDetails && campaignDetails.end_time) {
-    const endTime = new Date(campaignDetails.end_time).getTime();
-    setEndTime(endTime);
-  }
-}, [campaignDetails]);
+    return { days, hours, minutes, seconds };
+  };
 
-useEffect(() => {
-  const interval = setInterval(() => {
-    setTimeLeft(calculateTimeLeft(endTime));
-  }, 1000);
+  const [endTime, setEndTime] = useState(
+    new Date().getTime() + 1000 * 60 * 60 * 48
+  ); // 2 days from now
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(endTime));
+  const [campaignDetails, setCampaignDetails] = useState<
+    CampaignDetails | undefined
+  >(undefined);
 
-  return () => clearInterval(interval);
-}, [endTime]);
+  const getCampaignDetails = async (campaignId: string): Promise<void> => {
+    const requestOptions: RequestInit = {
+      method: "GET",
+      redirect: "follow",
+    };
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:5000/campaign?campaign_id=${campaignId}`,
+        requestOptions
+      );
+      const result = await response.json();
+      const parsedResult = JSON.parse(result.data);
+      console.log(parsedResult);
+      setCampaignDetails(parsedResult);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (campaignDetails && campaignDetails.end_time) {
+      const endTime = new Date(campaignDetails.end_time).getTime();
+      setEndTime(endTime);
+    }
+  }, [campaignDetails]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft(calculateTimeLeft(endTime));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [endTime]);
 
   const dialogContent = [
     {
@@ -253,10 +256,12 @@ useEffect(() => {
   }, [params.campaignId]);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-[calc(100vh-100px)] bg-gray-100 p-8">
       {!campaignDetails ? (
-        <div className="flex justify-center items-center h-screen">
-          <div className="text-2xl font-semibold">Loading...</div>
+        <div className="flex justify-center items-center min-h-[calc(100vh-100px)]">
+          <div className="text-2xl font-semibold">
+            <ScaleLoader color="#3770ff" />
+          </div>
         </div>
       ) : (
         <main className="max-w-[75%] mx-auto">
@@ -267,7 +272,9 @@ useEffect(() => {
                   <CardTitle className="text-[#273339] text-[24px] font-[600]">
                     {campaignDetails?.campaign_name}
                   </CardTitle>
-                  <CardDescription className="text-[18px]">{campaignDetails?.company_name}</CardDescription>
+                  <CardDescription className="text-[18px]">
+                    {campaignDetails?.company_name}
+                  </CardDescription>
                 </CardHeader>
                 <div className="flex space-x-[30px] ml-auto mr-[30px] mt-[-15px]">
                   <a
@@ -299,12 +306,21 @@ useEffect(() => {
                     RUNS FROM
                   </div>
                   <div className="text-sm font-semibold">
-                    {format(new Date(campaignDetails.start_time), 'MMM d, yyyy')} - {format(new Date(campaignDetails.payout_time), 'MMM d, yyyy')}</div>
+                    {format(
+                      new Date(campaignDetails.start_time),
+                      "MMM d, yyyy"
+                    )}{" "}
+                    -{" "}
+                    {format(
+                      new Date(campaignDetails.payout_time),
+                      "MMM d, yyyy"
+                    )}
+                  </div>
                 </div>
 
                 <p className="text-[#0fa38d] text-[16px] font-[500] ml-auto mr-[40px]">
-                    250+ participating
-                  </p>
+                  250+ participating
+                </p>
               </div>
 
               <div className="mt-2 bg-gray-100 border w-[60%] ml-[25px] h-20 border-gray-200 rounded-lg p-4 mb-[25px]">
@@ -321,7 +337,11 @@ useEffect(() => {
                   <div className="flex gap-x-[10px]">
                     <div className="bg-[#f5f7f7] rounded-[15px] px-[10px] flex items-center">
                       <p className="text-[#38474e] p-0 m-0 text-[12px] font-[600] tracking-widest">
-                        PAYOUT : {format(new Date(campaignDetails.payout_time), 'MMM d, yyyy, hh:mm a')}
+                        PAYOUT :{" "}
+                        {format(
+                          new Date(campaignDetails.payout_time),
+                          "MMM d, yyyy, hh:mm a"
+                        )}
                       </p>
                     </div>
                   </div>
@@ -354,7 +374,10 @@ useEffect(() => {
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4"> 📣 Campaign Description</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              {" "}
+              📣 Campaign Description
+            </h2>
 
             <div className="h-[2px] bg-gray-100"></div>
 
@@ -387,8 +410,7 @@ useEffect(() => {
               )}
             </ul>
             <div className="flex flex-row items-center justify-center">
-              <Button 
-                className="bg-[#3770ff] hover:bg-[#2368fb] rounded-[10px] px-[40px] font-bold text-[16px]">
+              <Button className="bg-[#3770ff] hover:bg-[#2368fb] rounded-[10px] px-[40px] font-bold text-[16px]">
                 Participate
               </Button>
             </div>
