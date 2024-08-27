@@ -13,6 +13,8 @@ from resources.user import User
 from resources.campaign import Campaign, AddParticipantToCampaign
 from resources.insta_post import Posts
 from resources.cloudinary import Cloudinary
+from resources.retrieve_likes import  RetrieveLike
+
 
 
 app = Flask(__name__)
@@ -28,6 +30,8 @@ api.add_resource(Campaign, '/campaign')
 api.add_resource(AddParticipantToCampaign,'/campaign/add_participant')
 api.add_resource(Posts,'/posts')
 api.add_resource(Cloudinary, "/cloudinary")
+api.add_resource(RetrieveLike, "/retrieve_likes")
+
 
 if __name__ == "__main__":
    app.run(host='0.0.0.0', port=5000, debug=True)
