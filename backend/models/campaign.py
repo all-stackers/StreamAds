@@ -5,6 +5,7 @@ class Campaign(db.Document):
     campaign_name = db.StringField(required=True)
     campaign_description = db.StringField(required=True)
     company_name = db.StringField(required=True)
+    media_type = db.StringField(required=True)
     media_url = db.StringField(required=True)
     start_time = db.StringField(required=True)
     end_time = db.StringField(required=True)
@@ -25,6 +26,7 @@ class Campaign(db.Document):
                 campaign_name=args["campaign_name"],
                 campaign_description=args["campaign_description"],
                 company_name=args["company_name"],
+                media_type=args["media_type"],
                 media_url=args["media_url"],
                 start_time=args["start_time"],
                 end_time=args["end_time"],
@@ -57,6 +59,15 @@ class Campaign(db.Document):
         try:
             campaign = cls.objects(campaign_id=campaign_id).first()
             return {'error': False, 'data': campaign}
+
+        except Exception as e:
+            return {'error': True, 'data': str(e)}
+        
+    @classmethod
+    def get_campaigns_by_company(cls, company_name):
+        try:
+            campaigns = cls.objects(company_name=company_name)
+            return {'error': False, 'data': campaigns}
 
         except Exception as e:
             return {'error': True, 'data': str(e)}
