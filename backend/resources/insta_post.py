@@ -9,7 +9,7 @@ class Posts(Resource):
 
         media_type = data.get('media_type', '').upper()
         media_url = data.get('media_url', '')
-        access_token = 'EAANArrNOQckBO3nEc1YQzZC2OkidNKU6Ax9xqXQq1sQKdYvN2MLYbyKON1BC7QZCF3ZC3XNwZAdKJbqWZAmi3sQW9CYvZCbbFgaRrX5cOOOfZAg7j1W1ekF8lKq72CgZBTfeZCxIagqhCViMNtEMA89fj8CZAJe1polvgFb5nQu6fUQnpAl9eAzfrjZA0e1YGPyXXyU4R9S9vnmBwNi7cH9ymcJ8ZBgwTMsZD'
+        access_token = 'EAANArrNOQckBO23nNdx6oYb5cFrIgm5ZCHU2GY3GQyOX51N2h1LU8i2l9CMKB2eX1p7tx73bj726gd7FIBZCeC8JDWCVgIU3gz7GsrFDSOyShmkUoFTUZBQvCSmkWxa0gT0eocpFtnpRW8ZCQ1ZBwSVioeMMjiW0I8JidNyIwtctdX82QBzRDZA9ZBs9nxZCceH3HZC4hbON3Rm1dZBKjEjWgIlOHC0uxHLUJtQuHB'
         insta_user_id = '17841464682383816'
         caption = data.get('caption', '')
 
