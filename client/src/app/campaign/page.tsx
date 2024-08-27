@@ -118,8 +118,8 @@ const Campaigns = () => {
         defaultValue="discover"
         className="w-full flex flex-col items-center"
       >
-        <div className="py-[20px] bg-white w-full flex justify-center shadow-lg shadow-gray-200/30">
-          <TabsList className="p-[10px] rounded-[10px]">
+        <div className="py-[20px] bg-white border-t-[2px] w-full flex justify-center shadow-lg shadow-gray-200/30">
+          <TabsList className="p-[5px]">
             <TabsTrigger
               className="my-[10px]"
               value="discover"
