@@ -13,6 +13,8 @@ class Campaign(db.Document):
     post = db.StringField(required=True)
     likes = db.StringField(required=True)
     minimum_likes = db.IntField()
+    followers = db.StringField(required=True)
+    minimum_followers = db.IntField()
     participants = db.ListField(db.StringField())
 
     @classmethod
@@ -31,6 +33,8 @@ class Campaign(db.Document):
                 post=args["post"],
                 likes=args["likes"],
                 minimum_likes=args["minimum_likes"],
+                followers=args["followers"],
+                minimum_followers=args["minimum_followers"],
                 participants=[]
             )
             campaign.save()
@@ -43,7 +47,7 @@ class Campaign(db.Document):
     def get_all_campaigns(cls):
         try:
             campaigns = cls.objects()
-            return {'error': False, 'data': campaigns.to_json()}
+            return {'error': False, 'data': campaigns}
 
         except Exception as e:
             return {'error': True, 'data': str(e)}
@@ -51,8 +55,8 @@ class Campaign(db.Document):
     @classmethod
     def get_campaign(cls, campaign_id):
         try:
-            campaign = cls.objects(campaign_id=campaign_id)
-            return {'error': False, 'data': campaign.to_json()}
+            campaign = cls.objects(campaign_id=campaign_id).first()
+            return {'error': False, 'data': campaign}
 
         except Exception as e:
             return {'error': True, 'data': str(e)}
