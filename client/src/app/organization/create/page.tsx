@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileUploader } from "react-drag-drop-files";
 import { useToast } from "@/components/ui/use-toast";
 
-import { addDays, format } from "date-fns";
+import { addDays, format, set } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -35,10 +35,12 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
+import ScaleLoader from "react-spinners/ScaleLoader";
+
+import { useRouter } from "next/navigation";
+
 const hashtags = ["#hash1", "#hash2", "#hash3", "#hash4"];
 const Create = () => {
-  const { toast } = useToast();
-
   const [file, setFile] = useState<any>(null);
   const [campaignName, setCampaignName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -51,11 +53,21 @@ const Create = () => {
   const [likesCount, setLikesCount] = React.useState<number>(0);
   const [followers, setFollowers] = React.useState<boolean>(false);
   const [followersCount, setFollowersCount] = React.useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const { toast } = useToast();
+  const router = useRouter();
 
   const handleChange = (uploadedFile: any) => {
     if (uploadedFile) {
       setFile(uploadedFile);
     }
+  };
+  const formatDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}T23:59:59Z`;
   };
   const handleAddHashtag = () => {
     let captions = caption;
@@ -78,20 +90,85 @@ const Create = () => {
     });
   };
 
-  const handleFinish = () => {
-    console.log({
-      file,
-      campaignName,
-      description,
-      caption,
-      campaignDate,
-      payoutDate,
-      prizePool,
-      likes,
-      likesCount,
-      followers,
-      followersCount,
-    });
+  const handleFinish = async () => {
+    setLoading(true);
+    try {
+      // Create a FormData object and append the file
+      const formdata = new FormData();
+      if (file) {
+        formdata.append("image", file);
+      }
+
+      // Define the request options for the first API call
+      const requestOptions: RequestInit = {
+        method: "POST",
+        body: formdata,
+        redirect: "follow",
+      };
+
+      // Perform the first fetch request
+      const response = await fetch(
+        "http://localhost:5000/cloudinary",
+        requestOptions
+      );
+      const result = await response.json(); // Parse the response as JSON
+
+      // Check if the response is successful and contains the data
+      if (!result.error && result.data) {
+        const imageUrl = result.data;
+        const currentDateTime = new Date();
+
+        // Prepare data for the second API call
+        const postData = {
+          media_url: imageUrl,
+          campaign_name: campaignName,
+          company_name: "Aptos",
+          campaign_description: description,
+          start_time: currentDateTime ? formatDate(currentDateTime) : "",
+          caption: caption,
+          end_time: campaignDate ? formatDate(campaignDate) : "",
+          payout_time: payoutDate ? formatDate(payoutDate) : "",
+          prize_pool: prizePool,
+          likes: likes ? "yes" : "no",
+          minimum_likes: likesCount,
+          followers: followers ? "yes" : "no",
+          post: "yes",
+          minimum_followers: followersCount,
+          media_type: file.type.includes("video") ? "video" : "image",
+        };
+
+        // Define the request options for the second API call
+        const postOptions: RequestInit = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(postData),
+          redirect: "follow",
+        };
+
+        // Perform the second fetch request
+        const postResponse = await fetch(
+          "http://localhost:5000/campaign",
+          postOptions
+        );
+        const postResult = await postResponse.json(); // Parse the response as JSON
+        console.log(postResult);
+        if (!postResult.error) {
+          toast({
+            color: "80.9 88.5% 79.6%",
+            description: "Campaign created successfully!",
+          });
+          setLoading(false);
+          router.push("/campaignDetails/" + postResult.data);
+          console.log("Campaign created successfully!");
+        }
+      } else {
+        console.error("Failed to get image URL:", result);
+      }
+    } catch (error) {
+      console.error("Error handling requests:", error);
+    }
   };
 
   const dialogContent = [
@@ -562,7 +639,11 @@ const Create = () => {
             className="px-[40px] bg-blue-500 text-[16px] font-[400] hover:bg-blue-600"
             onClick={handleFinish}
           >
-            Finish
+            {loading ? (
+              <ScaleLoader color="#fff" loading={loading}/>
+            ) : (
+              "Finish"
+            )}
           </Button>
         </div>
       ),
@@ -570,36 +651,38 @@ const Create = () => {
   ];
 
   return (
-    <Dialog>
-      <div className="flex flex-col justify-center items-center bg-[#f0f5f5] min-h-[calc(100vh-100px)]">
-        <div className="flex flex-col justify-center items-center max-w-[600px]">
-          <h1 className="font-[800] text-[#273339] text-[48px] leading-[55px]">
-            Create a campaign!
-          </h1>
-          <p className="mt-[25px] text-center text-[20px] text-[#5c686d] leading-[30px] font-[400]">
-            The only thing that can match the thrill of attending a hackathon is
-            the exhilaration of organizing one yourself! Join 100s of other
-            hackathons on Devfolio and manage your applications, submissions,
-            comms, reimbursements, and judging, all on our platform.
-          </p>
-          <DialogTrigger asChild>
-            <button className="mt-[40px] bg-[#5768FF] text-white font-[500] text-[24px] py-[10px] px-[40px] rounded-[5px]">
-              Create your campaign on StreamAd
-            </button>
-          </DialogTrigger>
+    <>
+      <Dialog>
+        <div className="flex flex-col justify-center items-center bg-[#f0f5f5] min-h-[calc(100vh-100px)]">
+          <div className="flex flex-col justify-center items-center max-w-[600px]">
+            <h1 className="font-[800] text-[#273339] text-[48px] leading-[55px]">
+              Create a campaign!
+            </h1>
+            <p className="mt-[25px] text-center text-[20px] text-[#5c686d] leading-[30px] font-[400]">
+              The only thing that can match the thrill of attending a hackathon
+              is the exhilaration of organizing one yourself! Join 100s of other
+              hackathons on Devfolio and manage your applications, submissions,
+              comms, reimbursements, and judging, all on our platform.
+            </p>
+            <DialogTrigger asChild>
+              <button className="mt-[40px] bg-[#5768FF] text-white font-[500] text-[24px] py-[10px] px-[40px] rounded-[5px]">
+                Create your campaign on StreamAd
+              </button>
+            </DialogTrigger>
+          </div>
         </div>
-      </div>
-      <DialogContent className="max-w-[576px] w-fit max-h-[90vh] scrollbar-hide overflow-y-auto p-[64px] py-[48px]">
-        <DialogHeader>
-          <DialogTitle>{dialogContent[steps].title}</DialogTitle>
-          <DialogDescription>
-            {dialogContent[steps].description}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4">{dialogContent[steps].content}</div>
-        <DialogFooter>{dialogContent[steps].footer}</DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <DialogContent className="max-w-[576px] w-fit max-h-[90vh] scrollbar-hide overflow-y-auto p-[64px] py-[48px]">
+          <DialogHeader>
+            <DialogTitle>{dialogContent[steps].title}</DialogTitle>
+            <DialogDescription>
+              {dialogContent[steps].description}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4">{dialogContent[steps].content}</div>
+          <DialogFooter>{dialogContent[steps].footer}</DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
