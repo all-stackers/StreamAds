@@ -55,11 +55,6 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
   const router = useRouter();
   const [steps, setSteps] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
-  const post = {
-    type: "image",
-    caption: "This is a sample caption for the post.",
-    file: "/web3.jpg",
-  };
 
   const highlightHashtags = (text: string) => {
     const regex = /#\w+/g;
@@ -143,7 +138,9 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
     myHeaders.append("Content-Type", "application/json");
 
     const postData = {
-      media_type: "IMAGE",
+      media_type: campaignDetails?.media_type.includes("video")
+        ? "REELS"
+        : "IMAGE",
       media_url: campaignDetails?.media_url,
       caption: campaignDetails?.caption,
     };
@@ -183,12 +180,12 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
               <p className="font-bold">allstackers</p>
             </div>
             <div className="flex flex-col items-center justify-center bg-gray-200 h-[300px]">
-              {post.file && (
+              {campaignDetails?.media_url && (
                 <>
                   {campaignDetails?.media_type.includes("video") ? (
                     <video
                       className="w-[100%]"
-                      src={post.file}
+                      src={campaignDetails?.media_url}
                       autoPlay={true}
                       loop={true}
                     ></video>
@@ -419,12 +416,25 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
                 </CardFooter>
               </Card>
 
-              <div className="flex w-[40%] bg-black rounded-[10px] justify-center items-center">
-                <img
-                  src={campaignDetails.media_url}
-                  alt="ETH Seoul"
-                  className="h-full rounded-lg"
-                />
+              <div className="flex w-[40%] bg-gray-200 rounded-[10px] justify-center items-center">
+                {campaignDetails?.media_url && (
+                  <>
+                    {campaignDetails?.media_type.includes("video") ? (
+                      <video
+                        className="h-[100%] rounded-[10px]"
+                        src={campaignDetails?.media_url}
+                        autoPlay={true}
+                        loop={true}
+                      ></video>
+                    ) : (
+                      <img
+                        className="h-[100%]"
+                        src={campaignDetails?.media_url}
+                        alt="Selected"
+                      ></img>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 

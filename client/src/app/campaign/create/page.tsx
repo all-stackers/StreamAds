@@ -38,6 +38,7 @@ import { Switch } from "@/components/ui/switch";
 import ScaleLoader from "react-spinners/ScaleLoader";
 
 import { useRouter } from "next/navigation";
+import { PinataSDK } from "pinata";
 
 const hashtags = ["#hash1", "#hash2", "#hash3", "#hash4"];
 const Create = () => {
@@ -57,6 +58,11 @@ const Create = () => {
 
   const { toast } = useToast();
   const router = useRouter();
+
+  const pinata = new PinataSDK({
+    pinataJwt: process.env.NEXT_PUBLIC_PINATA_JWT,
+    pinataGateway: process.env.NEXT_PUBLIC_PINATA_ENDPOINT,
+  });
 
   const handleChange = (uploadedFile: any) => {
     if (uploadedFile) {
@@ -92,30 +98,12 @@ const Create = () => {
 
   const handleFinish = async () => {
     setLoading(true);
+    console.log(process.env.NEXT_PUBLIC_PINATA_JWT);
     try {
-      // Create a FormData object and append the file
-      const formdata = new FormData();
-      if (file) {
-        formdata.append("image", file);
-      }
-
-      // Define the request options for the first API call
-      const requestOptions: RequestInit = {
-        method: "POST",
-        body: formdata,
-        redirect: "follow",
-      };
-
-      // Perform the first fetch request
-      const response = await fetch(
-        "http://localhost:5000/cloudinary",
-        requestOptions
-      );
-      const result = await response.json(); // Parse the response as JSON
-
-      // Check if the response is successful and contains the data
-      if (!result.error && result.data) {
-        const imageUrl = result.data;
+      const upload = await pinata.upload.file(file);
+      console.log(upload);
+      if (upload.IpfsHash) {
+        const imageUrl = `${process.env.NEXT_PUBLIC_PINATA_ENDPOINT}/ipfs/${upload.IpfsHash}`;
         const currentDateTime = new Date();
 
         // Prepare data for the second API call
@@ -162,13 +150,80 @@ const Create = () => {
           setLoading(false);
           router.push("/campaignDetails/" + postResult.data);
           console.log("Campaign created successfully!");
+        } else {
+          toast({
+            variant: "destructive",
+            description: "Error while creating campaign",
+          });
         }
       } else {
-        console.error("Failed to get image URL:", result);
+        toast({
+          variant: "destructive",
+          description: "Error uploading file to Pinata",
+        });
       }
     } catch (error) {
-      console.error("Error handling requests:", error);
+      console.error("Error uploading file to Pinata:", error);
+      toast({
+        variant: "destructive",
+        description: "Error uploading file to Pinata",
+      });
+      setLoading(false);
     }
+
+    // Check if the response is successful and contains the data
+    // if (!res.error && res.data) {
+    //   const imageUrl = result.data;
+    //   const currentDateTime = new Date();
+
+    //   // Prepare data for the second API call
+    //   const postData = {
+    //     media_url: imageUrl,
+    //     campaign_name: campaignName,
+    //     company_name: "Aptos",
+    //     campaign_description: description,
+    //     start_time: currentDateTime ? formatDate(currentDateTime) : "",
+    //     caption: caption,
+    //     end_time: campaignDate ? formatDate(campaignDate) : "",
+    //     payout_time: payoutDate ? formatDate(payoutDate) : "",
+    //     prize_pool: prizePool,
+    //     likes: likes ? "yes" : "no",
+    //     minimum_likes: likesCount,
+    //     followers: followers ? "yes" : "no",
+    //     post: "yes",
+    //     minimum_followers: followersCount,
+    //     media_type: file.type.includes("video") ? "video" : "image",
+    //   };
+
+    //   // Define the request options for the second API call
+    //   const postOptions: RequestInit = {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify(postData),
+    //     redirect: "follow",
+    //   };
+
+    //   // Perform the second fetch request
+    //   const postResponse = await fetch(
+    //     "http://localhost:5000/campaign",
+    //     postOptions
+    //   );
+    //   const postResult = await postResponse.json(); // Parse the response as JSON
+    //   console.log(postResult);
+    //   if (!postResult.error) {
+    //     toast({
+    //       color: "80.9 88.5% 79.6%",
+    //       description: "Campaign created successfully!",
+    //     });
+    //     setLoading(false);
+    //     router.push("/campaignDetails/" + postResult.data);
+    //     console.log("Campaign created successfully!");
+    //   }
+    // } else {
+    //   console.error("Failed to get image URL:", result);
+    // }
   };
 
   const dialogContent = [
@@ -640,7 +695,7 @@ const Create = () => {
             onClick={handleFinish}
           >
             {loading ? (
-              <ScaleLoader color="#fff" loading={loading}/>
+              <ScaleLoader color="#fff" loading={loading} />
             ) : (
               "Finish"
             )}
@@ -653,7 +708,7 @@ const Create = () => {
   return (
     <>
       <Dialog>
-        <div className="flex flex-col justify-center items-center bg-[#f0f5f5] min-h-[calc(100vh-100px)]">
+        <div className="flex flex-col justify-center items-center bg-[#f0f5f5] min-h-[calc(100vh-80px)]">
           <div className="flex flex-col justify-center items-center max-w-[600px]">
             <h1 className="font-[800] text-[#273339] text-[48px] leading-[55px]">
               Create a campaign!
