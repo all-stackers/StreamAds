@@ -8,7 +8,7 @@ import requests
 import os
 
 from models.user import User as UserModel
-from models.campaign import Campaign as CampaignModel
+from backend.models.campaign2 import Campaign as CampaignModel
 
 class Posts(Resource):
     def post(self):
