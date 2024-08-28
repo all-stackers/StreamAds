@@ -9,8 +9,8 @@ class Posts(Resource):
 
         media_type = data.get('media_type', '').upper()
         media_url = data.get('media_url', '')
-        access_token = 'EAANArrNOQckBO3nEc1YQzZC2OkidNKU6Ax9xqXQq1sQKdYvN2MLYbyKON1BC7QZCF3ZC3XNwZAdKJbqWZAmi3sQW9CYvZCbbFgaRrX5cOOOfZAg7j1W1ekF8lKq72CgZBTfeZCxIagqhCViMNtEMA89fj8CZAJe1polvgFb5nQu6fUQnpAl9eAzfrjZA0e1YGPyXXyU4R9S9vnmBwNi7cH9ymcJ8ZBgwTMsZD'
-        insta_user_id = '17841464682383816'
+        access_token = 'token_here'
+        insta_user_id = 'user_id_here'
         caption = data.get('caption', '')
 
         if not media_type or not media_url or not access_token or not insta_user_id:

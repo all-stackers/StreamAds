@@ -4,37 +4,34 @@ from flask import jsonify
 
 class RetrieveLike(Resource):
     def get(self):
-        post_id = '18125537296335167'  # Replace with actual post_id
-        access_token = 'EAANArrNOQckBOyMs9F4n2p3ZBGE4jlf5B4MYmv3XW89bkN0okJjaWQJSxv5TqqEjykxfPB8339GEFWnOFBihs4p3OlWr3FLDvAGXP26CHkkindnmcs2xjU3BxzV4QZAKlIUWtiYcQFsGwTYhubNmCTNm2p3xkfw8DY7pZBYG42pNKX7xZBRX7oZAKgZA5NXgZABvMuhRVon4ZCAGFgKyOjDGrx8UQAZDZD'
+        post_id = 'post_id_here'  # Replace with actual post_id
+        access_token = 'token_here'
         fields = 'id,caption,media_type,media_url,thumbnail_url,permalink,comments_count,like_count'
         
-        media_url = f'https://graph.instagram.com/{post_id}?fields={fields}&access_token={access_token}'
+        media_url =  f"https://graph.facebook.com/v20.0/{post_id}?fields=like_count&access_token={access_token}"
+        print(f"Media URL: {media_url}")
         
         try:
+            print("before")
             response = requests.get(media_url)
-            print(f"Response Status Code: {response.status_code}")
-            print(f"Response URL: {media_url}")
-            print(f"Response Text: {response.text}")
+            print("after")
+            print(response.json())
+            # response.raise_for_status()  # Raise an error for bad responses
             
-            if response.status_code == 200:
-                try:
-                    data = response.json()
-                    return jsonify({
-                        'post_id': data.get('id'),
-                        'caption': data.get('caption'),
-                        'media_type': data.get('media_type'),
-                        'media_url': data.get('media_url'),
-                        'thumbnail_url': data.get('thumbnail_url'),
-                        'permalink': data.get('permalink'),
-                        'comments_count': data.get('comments_count'),
-                        'like_count': data.get('like_count')
-                    })
-                except ValueError:
-                    return jsonify({'error': 'Response is not valid JSON'}), response.status_code
-            else:
-                return jsonify({
-                    'error': 'Failed to retrieve data from Instagram API',
-                    'details': response.text  # Provide raw response text for debugging
-                }), response.status_code
+            # print(f"Response Status Code: {response.status_code}")
+            # print(f"Response URL: {media_url}")
+            # print(f"Response Text: {response.text}")
+            
+            try:
+                # data = response.json()
+                print(response)
+                return {"data": response.json()}
+            except ValueError:
+                return jsonify({'error': 'Response is not valid JSON'}), 500
+        except requests.HTTPError as e:
+            return jsonify({
+                'error': 'Failed to retrieve data from Instagram API',
+                'details': str(e)  # Provide error details for debugging
+            }), 500
         except requests.RequestException as e:
             return jsonify({'error': str(e)}), 500
