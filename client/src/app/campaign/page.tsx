@@ -112,6 +112,10 @@ const Campaigns = () => {
     router.push(`/campaignDetails/${campaignId}`);
   }
 
+  const navigateToParticipantsPage = (campaignId: string) => {
+    router.push(`/campaign/participants/${campaignId}`);
+  }
+
   return (
     <div className="min-h-[calc(100vh-100px)] bg-[#f5f7f7]">
       <Tabs
@@ -203,7 +207,7 @@ const Campaigns = () => {
 
                       <CardContent>
                         <div className="flex flex-col gap-y-[10px]">
-                          <p className="text-blue-400 text-[16px] font-[500]">
+                          <p className="text-blue-400 text-[16px] font-[500] hover:cursor-pointer" onClick={() => navigateToParticipantsPage(campaign.campaign_id)}>
                             + {campaign.participants.length} participating
                           </p>
                           <div className="rounded-full border-[2px] w-fit border-gray-300 px-[10px]">
@@ -339,7 +343,7 @@ const Campaigns = () => {
 
                   <CardContent>
                     <div className="flex flex-col gap-y-[10px]">
-                      <p className="text-blue-400 text-[16px] font-[500]">
+                      <p className="text-blue-400 text-[16px] font-[500] hover:cursor-pointer" onClick={() => navigateToParticipantsPage(campaign.campaign_id)}>
                         + {campaign.participants.length} participating
                       </p>
                       <div className="rounded-full border-[2px] w-fit border-gray-300 px-[10px]">
