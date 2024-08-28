@@ -1,7 +1,14 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask_restful import Resource
 from flask import json, request, jsonify
 import time
 import requests
+import os
+
+from models.user import User as UserModel
+from backend.models.campaign2 import Campaign as CampaignModel
 
 class Posts(Resource):
     def post(self):
@@ -9,9 +16,11 @@ class Posts(Resource):
 
         media_type = data.get('media_type', '').upper()
         media_url = data.get('media_url', '')
-        access_token = 'token_here'
-        insta_user_id = 'user_id_here'
         caption = data.get('caption', '')
+        campaign_id = data.get('campaign_id', '')
+        wallet_address = data.get('wallet_address', '')
+        access_token = os.getenv('INSTAGRAM_ACCESS_TOKEN')
+        insta_user_id = os.getenv('INSTAGRAM_USER_ID')
 
         if not media_type or not media_url or not access_token or not insta_user_id:
             return jsonify({'error': 'Missing required parameters'}), 400
@@ -19,13 +28,35 @@ class Posts(Resource):
         results = self.upload_media(media_url, media_type, access_token, insta_user_id, caption)
 
         if results:
-            print("Upload Media Results:", results)  # Debug print
+            print("Upload Media Results:", results)
             time.sleep(10)
             ig_container_id = results.get('id')
             if ig_container_id:
                 s = self.status_code(ig_container_id, access_token)
                 if s == 'FINISHED':
                     publish_response = self.publish_media(results, access_token, insta_user_id)
+
+                    response = UserModel.get_user_by_wallet_address(wallet_address)
+                    if response["error"]:
+                        return {"error": True, "data": response["data"]}, 400
+                    
+                    args = {
+                        'campaign_id': campaign_id,
+                        'wallet_address': wallet_address,
+                        'instagram_username': response["data"]["instagram_username"]
+                    }
+
+                    response = CampaignModel.add_participant(args)
+                    if response['error']:
+                        return jsonify({'error': 'Error adding participant'}), 500
+                    
+                    response = UserModel.add_participated_campaign(
+                        campaign_id=campaign_id,
+                        wallet_address=wallet_address
+                    )
+                    if response['error']:
+                        return jsonify({'error': 'Error adding participated campaign'}), 500
+
                     return jsonify({
                         'status': 'success',
                         'message': 'Media uploaded and published successfully',

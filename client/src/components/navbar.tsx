@@ -3,6 +3,30 @@ import React from "react";
 import { useRouter } from "next/navigation";
 
 const Navabar = () => {
+  const [userAddress, setUserAddress] = React.useState("");
+    const getAptosWallet = async() => {
+      const isPetraInstalled =await  window?.aptos;
+      if ('aptos' in window) {
+        console.log(window.aptos)
+        const wallet = window.aptos;
+ 
+        try {
+            // await wallet.disconnect(); //disconnect
+  const response = await wallet.connect();
+  console.log(response); // { address: string, address: string }
+     setUserAddress(response.address);
+  const account = await wallet.account();
+  console.log(account); // { address: string, address: string }
+} catch (error) {
+  // { code: 4001, message: "User rejected the request."}
+}
+
+  } else {
+    window.open('https://petra.app/', `_blank`);
+  }
+};
+
+  
   const router = useRouter();
   return (
     <div className="flex px-[50px] py-[20px] justify-center">
@@ -36,7 +60,7 @@ const Navabar = () => {
             alt="avatar"
             className="h-[40px] rounded-full"
           />
-          <span className="font-[500] text-gray-600">0x...989h</span>
+          <button onClick={() => getAptosWallet()} className="font-[500] text-gray-600"> {`${userAddress.slice(0, 3)}...${userAddress.slice(-3)}`}</button>
         </div>
       </div>
     </div>

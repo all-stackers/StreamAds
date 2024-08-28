@@ -2,7 +2,6 @@ module CampaignManager {
 
     use std::signer;
     use std::vector;
-    use std::option;
     use aptos_framework::coin::{Self, Coin};
     use aptos_framework::timestamp::{Self, Timestamp};
 
@@ -14,14 +13,14 @@ module CampaignManager {
         participants: vector<(address, vector<u8>)>,
     }
 
-    struct CampaignManager has key {
-        campaigns: table<u64, Campaign>,
+    struct CampaignManager has key, store {
+        campaigns: table::Table<u64, Campaign>,
         campaign_counter: u64,
     }
 
     public fun initialize(account: &signer) {
         move_to(account, CampaignManager {
-            campaigns: table::new<u64, Campaign>(),
+            campaigns: table::Table::new<u64, Campaign>(),
             campaign_counter: 0,
         });
     }
@@ -63,25 +62,28 @@ module CampaignManager {
         vector::push_back(&mut campaign.participants, (signer::address_of(account), instagram_post_id));
     }
 
-    public fun distribute_rewards(account: &signer, campaign_id: u64) {
-        let manager = borrow_global_mut<CampaignManager>(signer::address_of(account));
-        let campaign = table::borrow_mut(&mut manager.campaigns, campaign_id);
+//    public fun distribute_rewards(account: &signer, campaign_id: u64) {
+//     let manager = borrow_global_mut<CampaignManager>(signer::address_of(account));
+//     let campaign = table::borrow_mut(&mut manager.campaigns, campaign_id);
 
-        // Check if the reward timestamp is reached
-        let current_time = Timestamp::now_seconds();
-        assert!(current_time >= campaign.reward_timestamp, 1);
+//     // Check if the reward timestamp is reached
+//     let current_time = Timestamp::now_seconds();
+//     assert!(current_time >= campaign.reward_timestamp, 1);
 
-        let num_participants = vector::length(&campaign.participants);
-        assert!(num_participants > 0, 2);
+//     let num_participants = vector::length(&campaign.participants);
+//     assert!(num_participants > 0, 2);
 
-        let reward_per_participant = Coin::value(&campaign.pool_amount) / num_participants;
+//     let reward_per_participant = Coin::value(&campaign.pool_amount) / num_participants;
 
-        for participant in campaign.participants {
-            let (participant_address, _) = participant;
-            Coin::deposit(&participant_address, Coin::withdraw(account, reward_per_participant));
-        }
+//     let i = 0;
+//     while (i < num_participants) {
+//         let (participant_address, _) = vector::borrow(&campaign.participants, i);
+//         Coin::transfer(&mut campaign.pool_amount, participant_address, reward_per_participant);
+//         i = i + 1;
+//     }
 
-        // Reset pool amount after distribution
-        campaign.pool_amount = Coin::zero();
-    }
+//     // Reset pool amount after distribution
+//     &campaign.pool_amount = Coin::zero();
+// }
+
 }

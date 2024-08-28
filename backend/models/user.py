@@ -5,7 +5,7 @@ class User(db.Document):
     instagram_username = db.StringField(required=True, unique=True)
     instagram_access_token = db.StringField(required=True)
     instagram_business_profile_id = db.StringField(required=True)
-    participated_campaigns = db.ListField(db.StringField())
+    participated_campaigns = db.ListField(db.DictField())
 
     @classmethod
     def add_user(cls, args):
@@ -33,6 +33,15 @@ class User(db.Document):
     def get_user_by_wallet_address(cls, wallet_address):
         try:
             user = cls.objects(wallet_address=wallet_address).first()
+            return {'error': False, 'data': user}
+        except Exception as e:
+            return {'error': True, 'message': str(e)}
+        
+    @classmethod
+    def add_participated_campaign(cls, wallet_address, campaign_id, instagram_post_id):
+        try:
+            user = cls.objects(wallet_address=wallet_address).first()
+            user.update(push__participated_campaigns={'campaign_id': campaign_id, 'instagram_post_id': instagram_post_id})
             return {'error': False, 'data': user.to_json()}
         except Exception as e:
             return {'error': True, 'message': str(e)}
