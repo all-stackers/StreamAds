@@ -56,7 +56,7 @@ api.add_resource(Task, '/task')
 
 
 
-
+app.secret_key = os.urandom(24)
 
 CONSUMER_KEY = os.getenv('CONSUMER_KEY')
 CONSUMER_SECRET = os.getenv('CONSUMER_SECRET')
@@ -72,6 +72,7 @@ temp_tweet_id='1828775378380324889'
 @app.route('/login')
 def login():
     oauth = OAuth1Session(CONSUMER_KEY, client_secret=CONSUMER_SECRET)
+    print(CONSUMER_KEY,CONSUMER_SECRET)
     try:
         fetch_response = oauth.fetch_request_token(REQUEST_TOKEN_URL)
     except ValueError:
@@ -103,9 +104,9 @@ def callback():
 
     session['access_token'] = oauth_response.get('oauth_token')
     session['access_token_secret'] = oauth_response.get('oauth_token_secret')
-
-    return 'You are logged in! <a href="/tweet">Post a Tweet</a> | <a href="/quote-tweet">Quote a Tweet</a> | <a href="/retweet">Retweet</a> | <a href="/tweet_with_media">Post a Tweet with Media</a> | <a href="/get_likes">Get Likes</a>'
-
+    return redirect('http://localhost:3000/campaign')
+   #  return 'You are logged in! <a href="/tweet">Post a Tweet</a> | <a href="/quote-tweet">Quote a Tweet</a> | <a href="/retweet">Retweet</a> | <a href="/tweet_with_media">Post a Tweet with Media</a> | <a href="/get_likes">Get Likes</a>'
+   
 def generate_oauth_signature(method, url, params):
     """Generate OAuth 1.0a signature."""
     # Create signature base string
