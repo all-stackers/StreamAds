@@ -112,14 +112,18 @@ const Campaigns = () => {
     router.push(`/campaignDetails/${campaignId}`);
   }
 
+  const navigateToParticipantsPage = (campaignId: string) => {
+    router.push(`/campaign/participants/${campaignId}`);
+  }
+
   return (
     <div className="min-h-[calc(100vh-100px)] bg-[#f5f7f7]">
       <Tabs
         defaultValue="discover"
         className="w-full flex flex-col items-center"
       >
-        <div className="py-[20px] bg-white w-full flex justify-center shadow-lg shadow-gray-200/30">
-          <TabsList className="p-[10px] rounded-[10px]">
+        <div className="py-[20px] bg-white border-t-[2px] w-full flex justify-center shadow-lg shadow-gray-200/30">
+          <TabsList className="p-[5px]">
             <TabsTrigger
               className="my-[10px]"
               value="discover"
@@ -203,7 +207,7 @@ const Campaigns = () => {
 
                       <CardContent>
                         <div className="flex flex-col gap-y-[10px]">
-                          <p className="text-blue-400 text-[16px] font-[500]">
+                          <p className="text-blue-400 text-[16px] font-[500] hover:cursor-pointer" onClick={() => navigateToParticipantsPage(campaign.campaign_id)}>
                             + {campaign.participants.length} participating
                           </p>
                           <div className="rounded-full border-[2px] w-fit border-gray-300 px-[10px]">
@@ -265,7 +269,7 @@ const Campaigns = () => {
               <Button
                 className="flex items-center gap-x-[10px] text-[16px] text-[#3770ff] font-[500] bg-[#b3ceff] rounded-[10px] hover:bg-blue-500 hover:text-white"
                 onClick={() => {
-                  router.push("/organization/create");
+                  router.push("/campaign/create");
                 }}
               >
                 Create Campaign
@@ -339,7 +343,7 @@ const Campaigns = () => {
 
                   <CardContent>
                     <div className="flex flex-col gap-y-[10px]">
-                      <p className="text-blue-400 text-[16px] font-[500]">
+                      <p className="text-blue-400 text-[16px] font-[500] hover:cursor-pointer" onClick={() => navigateToParticipantsPage(campaign.campaign_id)}>
                         + {campaign.participants.length} participating
                       </p>
                       <div className="rounded-full border-[2px] w-fit border-gray-300 px-[10px]">
@@ -377,7 +381,7 @@ const Campaigns = () => {
                   </CardContent>
 
                   <CardFooter>
-                    <Button className="w-full rounded-[10px]">See More</Button>
+                    <Button className="w-full rounded-[10px]" onClick={() => navigate(campaign.campaign_id)}>See More</Button>
                   </CardFooter>
                 </Card>
               ))}
