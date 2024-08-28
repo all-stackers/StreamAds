@@ -14,6 +14,8 @@ from resources.campaign import Campaign, AddParticipantToCampaign
 from resources.insta_post import Posts
 from resources.cloudinary import Cloudinary
 from resources.retrieve_likes import  RetrieveLike
+from resources.hastag_generation import  Hashtags
+from resources.hastag_generation import  Caption
 
 
 
@@ -31,6 +33,8 @@ api.add_resource(AddParticipantToCampaign,'/campaign/add_participant')
 api.add_resource(Posts,'/posts')
 api.add_resource(Cloudinary, "/cloudinary")
 api.add_resource(RetrieveLike, "/retrieve_likes")
+api.add_resource(Hashtags, "/hashtag")
+api.add_resource(Caption, "/caption")
 
 
 if __name__ == "__main__":
