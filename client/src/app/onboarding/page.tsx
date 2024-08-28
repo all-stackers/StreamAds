@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 const Onboarding = () => {
   const [checkedWallet, setCheckedWallet] = useState("");
   const [step, setStep] = useState(1);
+
   return (
     <div className="min-h-[calc(100vh-100px)] bg-[#f5f7f7] flex flex-col justify-center items-center">
       <div className="flex flex-col py-[20px] max-w-[500px] gap-y-[30px] justify-center items-center">
