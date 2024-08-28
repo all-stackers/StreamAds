@@ -67,6 +67,7 @@ MEDIA_UPLOAD_URL = 'https://upload.twitter.com/1.1/media/upload.json'
 TWEET_CREATE_URL = 'https://api.twitter.com/1.1/statuses/update.json'
 RETWEET_URL = 'https://api.twitter.com/2/tweets/:id/retweets'
 QUOTE_TWEET_URL_TEMPLATE = 'https://api.twitter.com/2/tweets/{}/quote_tweets'
+temp_tweet_id='1828775378380324889'
 
 @app.route('/login')
 def login():
@@ -140,7 +141,8 @@ def build_auth_header(oauth_params):
 
 @app.route('/tweet')
 def tweet():
-    payload = {"text": "Hello Deep Here"}
+    data=request.form['data']
+    payload = {"text": data}
     oauth = OAuth1Session(
         CONSUMER_KEY,
         client_secret=CONSUMER_SECRET,
@@ -181,8 +183,9 @@ def quotetweet():
     )
     print(client)
     try:
-        quote_text = "Get a Look! 🚀"
-        quote_tweet_response = client.create_tweet(text=quote_text, quote_tweet_id="1828775378380324889")
+        
+        quote_text = request.form['text']
+        quote_tweet_response = client.create_tweet(text=quote_text, quote_tweet_id="temp_tweet_id")
         # Post a tweet using the API v2
         response = quote_tweet_response
         return f"Tweet posted successfully! Tweet ID: {response.data['id']}"
@@ -192,7 +195,7 @@ def quotetweet():
 
 @app.route('/get_likes')
 def get_liking_users():
-    tweet_id="1828775378380324889"
+    tweet_id="temp_tweet_id"
     client = tweepy.Client(
         bearer_token=os.getenv('bearer_token'),
         consumer_key=CONSUMER_KEY,
@@ -219,7 +222,7 @@ TWEET_CREATE_URL = "https://api.twitter.com/1.1/statuses/update.json"
 
 @app.route('/tweet_with_media')
 def tweet_with_media():
-    media_url = "https://apricot-big-hookworm-563.mypinata.cloud/ipfs/bafkreihgb32abtzuep7vagiiusc3nufuxy4h6vaopvhehu42lsuhfztat4"
+    media_url = request.form['media_url']
 
     # Create OAuth1 session
     oauth = OAuth1Session(
@@ -278,7 +281,7 @@ def tweet_with_media():
 
 @app.route('/retweet')
 def retweet():
-    tweet_id_to_retweet = "1828775378380324889"  # Replace with the tweet ID you want to retweet
+    tweet_id_to_retweet = "temp_tweet_id"  # Replace with the tweet ID you want to retweet
 
     oauth_params = {
         'oauth_consumer_key': CONSUMER_KEY,
