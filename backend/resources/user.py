@@ -1,6 +1,7 @@
 from flask_restful import Resource, reqparse
 from models.user import User as UserModel
 from flask import request
+import json
 
 class User(Resource):
     def post(self):
@@ -29,4 +30,12 @@ class User(Resource):
         if response['error']:
             return {'error': True, 'message': response['message']}
         
-        return response['data']
+        return {'error': False, 'data': json.loads(response['data'].to_json())}
+    
+class Participants(Resource):
+    def get(self):
+        campaign_id = request.args.get('campaign_id')
+
+        
+        
+        

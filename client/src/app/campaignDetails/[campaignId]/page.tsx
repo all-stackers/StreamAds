@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { ScaleLoader } from "react-spinners";
+import { useToast } from "@/components/ui/use-toast";
 
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import {
@@ -51,7 +52,9 @@ interface CampaignDetails {
   caption: string;
 }
 
+
 const devfolio = ({ params }: { params: { campaignId: string } }) => {
+  const { toast } = useToast();
   const router = useRouter();
   const [steps, setSteps] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
@@ -143,6 +146,8 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
         : "IMAGE",
       media_url: campaignDetails?.media_url,
       caption: campaignDetails?.caption,
+      campaign_id: campaignDetails?.campaign_id,
+      wallet_address: "0xx14"
     };
 
     const requestOptions = {
@@ -165,6 +170,13 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
       }
     } catch (error) {
       console.error(error);
+      toast({
+        variant: "destructive",
+        description: "Error while posting on Instagram.",
+      });
+    }
+    finally {
+      setLoading(false);
     }
   };
 
@@ -424,6 +436,8 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
                         className="h-[100%] rounded-[10px]"
                         src={campaignDetails?.media_url}
                         autoPlay={true}
+                        muted={true}
+                        controls={true}
                         loop={true}
                       ></video>
                     ) : (

@@ -1,6 +1,7 @@
 from flask_restful import Resource, reqparse
 from models.campaign import Campaign as CampaignModel
 from models.company import Company as CompanyModel
+from models.user import User as UserModel
 from flask import request
 import json
 
@@ -155,9 +156,16 @@ class Campaign(Resource):
 class AddParticipantToCampaign(Resource):
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument("campaign_id", type=str, required=True)
-        parser.add_argument("wallet_address", type=str, required=True)
+        parser.add_argument("campaign_id", type=str, required=True, help="Campaign ID is required")
+        parser.add_argument("wallet_address", type=str, required=True, help="Wallet address is required")
+        parser.add_argument("instagram_post_id", type=str, required=True, help="Instagram post ID is required")
         args = parser.parse_args()
+
+        response = UserModel.get_user_by_wallet_address(args["wallet_address"])
+        if response["error"]:
+            return {"error": True, "data": response["data"]}, 400
+        
+        args["instagram_username"] = response["data"]["instagram_username"]
 
         response = CampaignModel.add_participant(args)
 

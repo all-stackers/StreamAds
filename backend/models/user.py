@@ -33,6 +33,6 @@ class User(db.Document):
     def get_user_by_wallet_address(cls, wallet_address):
         try:
             user = cls.objects(wallet_address=wallet_address).first()
-            return {'error': False, 'data': user.to_json()}
+            return {'error': False, 'data': user}
         except Exception as e:
             return {'error': True, 'message': str(e)}

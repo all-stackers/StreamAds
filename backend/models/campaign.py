@@ -1,4 +1,5 @@
 from mongo_engine import db
+import json
 
 class Campaign(db.Document):
     campaign_id = db.StringField(required=True, unique=True)
@@ -17,7 +18,7 @@ class Campaign(db.Document):
     minimum_likes = db.IntField()
     followers = db.StringField(required=True)
     minimum_followers = db.IntField()
-    participants = db.ListField(db.StringField())
+    participants = db.ListField(db.DictField())
 
     @classmethod
     def add_campaign(cls, args):
@@ -78,8 +79,15 @@ class Campaign(db.Document):
     def add_participant(cls, args):
         try:
             campaign = cls.objects(campaign_id=args["campaign_id"]).first()
-            campaign.update(push__participants=args["wallet_address"])
-            return {'error': False, 'data': campaign.to_json()}
+            if not campaign:
+                return {'error': True, 'data': 'Campaign not found'}
+            data = {
+                'wallet_address': args["wallet_address"],
+                'instagram_username': args["instagram_username"],
+                'instagram_post_id': args["instagram_post_id"],
+            }
+            campaign.update(push__participants=data)
+            return {'error': False, 'data': "Participant added successfully"}
 
         except Exception as e:
             return {'error': True, 'data': str(e)}
