@@ -66,13 +66,13 @@ class Campaign(db.Document):
             return {'error': True, 'data': str(e)}
         
     @classmethod
-    def add_participant(cls, args):
+    def add_participant(cls, campaign_id, args):
         try:
-            campaign = cls.objects(campaign_id=args["campaign_id"]).first()
+            campaign = cls.objects(campaign_id=campaign_id).first()
             if not campaign:
                 return {'error': True, 'data': 'Campaign not found'}
             
-            campaign.update(push__participants=data)
+            campaign.update(push__participants=args)
             return {'error': False, 'data': "Participant added successfully"}
 
         except Exception as e:

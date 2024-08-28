@@ -111,10 +111,9 @@ class AddParticipantToCampaign(Resource):
         args = parser.parse_args()
 
         # pop out campaign_id from args
-        
+        campaign_id = args.pop("campaign_id")
 
-
-        response = CampaignModel.add_participant()
+        response = CampaignModel.add_participant(campaign_id, args)
 
         if response["error"]:
             return {"error": True, "data": response["data"]}, 400

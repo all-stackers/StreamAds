@@ -10,7 +10,7 @@ import os
 
 from resources.company import Company
 # from resources.user import User
-from resources.campaign import Campaign
+from resources.campaign import Campaign, AddParticipantToCampaign
 from resources.task import Task
 # from resources.insta_post import Posts
 # from resources.cloudinary import Cloudinary
@@ -30,7 +30,7 @@ db.init_app(app)
 api.add_resource(Company, '/company')
 # api.add_resource(User, '/user')
 api.add_resource(Campaign, '/campaign')
-# api.add_resource(AddParticipantToCampaign,'/campaign/add_participant')
+api.add_resource(AddParticipantToCampaign,'/campaign/add_participant')
 # api.add_resource(Posts,'/posts')
 # api.add_resource(Cloudinary, "/cloudinary")
 # api.add_resource(RetrieveLike, "/retrieve_likes")
