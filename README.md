@@ -1,6 +1,9 @@
 ## StreamAds
 
- Ever faced delays in payout for certain marketing tas
+ Ever faced delays/no payouts from your employeer/ for blog posts
+
+## Workflow
+![WhatsApp Image 2024-08-30 at 03 57 16](https://github.com/user-attachments/assets/31443899-e3c6-48a9-a377-2b2c6415bb37)
 
 
 ## Problem
