@@ -3,22 +3,37 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useWallet, WalletName } from "@aptos-labs/wallet-adapter-react";
 import { AptosConfig, Aptos, Network } from "@aptos-labs/ts-sdk";
-const Navabar = () => {
 
-  const { connect, disconnect, connected, account, signAndSubmitTransaction } = useWallet();
+const Navabar = () => {
+   const { connect, disconnect, connected, account, signAndSubmitTransaction } = useWallet();
   const [userAddress, setUserAddress] = React.useState("");
   const [publicKey, setPublicKey] = React.useState("null");
-  const getAptosWallet = async () => {
-    try {
+ const handleConnect = async () => {
+   
       // Change below to the desired wallet name instead of "Petra"
-      await connect("Petra" as WalletName<"Petra">); 
-      console.log('Connected to wallet:', account);
-    } catch (error) {
-      console.error('Failed to connect to wallet:', error);
-    }
-
-    console.log("account", account);
+      await connect("Petra" as WalletName<"Petra">);
+    console.log(account);
+      setUserAddress(account?.address || "");
+      
+   
+    
+ };
+  const consilidate = async () => {
+    console.log("hi", account);
   }
+ 
+  const handleDisconnect = async () => {
+    try {
+      console.log(account)
+      await disconnect();
+      console.log('Disconnected from wallet');
+    } catch (error) {
+      console.error('Failed to disconnect from wallet:', error);
+    }
+  };
+ 
+
+
   
   const createCampaign = async () => {
     console.log("hi", account);
@@ -32,9 +47,9 @@ const Navabar = () => {
     const response = await signAndSubmitTransaction({
       sender: account.address,
       data: {
-        function: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53::stream::create_campaign",
+        function: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53::stream::distribute_rewards",
         typeArguments: ["0x1::aptos_coin::AptosCoin"],
-        functionArguments: [10000000]
+        functionArguments: [1,["0xe4b14261dcfdc02456b31d0a216a1de2a706efcabc817efdd6f3f42f0480db79","0x152e85f4670b489587b8cd22022615f318733a6d6f7855a24b8af39ae64dc683"],100000000 ]
       },
     });
     // if you want to wait for transaction
@@ -80,8 +95,21 @@ const Navabar = () => {
             alt="avatar"
             className="h-[40px] rounded-full"
           />
-          <button onClick={()=> createCampaign()}> here </button>
-          <button onClick={getAptosWallet} className="font-[500] text-gray-600"> {`${userAddress.slice(0, 3)}...${userAddress.slice(-3)}`}</button>
+         
+          {/* <button onClick={() => createCampaign()}> here </button> */}
+           {connected ? (<button
+      className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 focus:outline-none"
+      onClick={handleDisconnect}
+          >
+           
+      Disconnect
+    </button>):(<button
+      className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 focus:outline-none"
+      onClick={handleConnect}
+    >
+      Connect
+    </button>)}
+      
         </div>
       </div>
     </div>
