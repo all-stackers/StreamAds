@@ -20,9 +20,7 @@ import { ScaleLoader } from "react-spinners";
 
 const Onboarding = () => {
   const { toast } = useToast();
-  const { account, connect, connected, wallet, changeNetwork, isLoading } =
-    useWallet();
-
+  const { account, connect, connected, wallet, changeNetwork, isLoading } = useWallet();
   const [checkedWallet, setCheckedWallet] = useState("");
   const [connectedWallet, setConnectedWallet] = useState(false);
   const [step, setStep] = useState(0);
@@ -39,6 +37,7 @@ const Onboarding = () => {
       console.error("Error initiating login:", error);
     }
   };
+
   const getAptosWallet = async () => {
     setLoading(true);
     if (connected == false) {
@@ -60,7 +59,9 @@ const Onboarding = () => {
     setLoading(false);
     console.log("account", account);
   };
+
   useEffect(() => {
+
     const fetchTwitterStatus = async () => {
       try {
         const response = await fetch(
