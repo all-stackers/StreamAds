@@ -409,7 +409,7 @@ def get_tweet_details(tweet_id, auth):
 
 
 def get_liking_users(tweet_id):
-    auth=OAuth1Session(
+    auth=OAuth1(
             APTOS_CONSUMER_KEY,
             client_secret=APTOS_CONSUMER_SECRET,
             resource_owner_key=os.environ.get("APTOS_ACCESS_TOKEN"),
