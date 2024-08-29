@@ -261,7 +261,7 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
               <div className="py-[10px]">
                 <p>
                   {campaignDetails?.caption?.length &&
-                  campaignDetails?.caption?.length > 0 ? (
+                    campaignDetails?.caption?.length > 0 ? (
                     highlightHashtags(campaignDetails?.caption)
                   ) : (
                     <em className="font-light">No Caption Added</em>
@@ -456,9 +456,16 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
 
             <div className="bg-white p-6 rounded-lg shadow-md mt-5 mb-5">
               <div className="text-center">
-                <h2 className="text-[48px] text-[#273339] font-[800] p-2">
-                  $ {campaignDetails?.prize_pool}.00
+                <h2 className="text-[48px] text-[#273339] font-[800] p-2 flex items-center justify-center">
+                  <img
+                    src="/assets/images/aptos.png"
+                    alt="Aptos"
+                    className="w-[48px] h-[48px] mr-2"
+                  />
+                  {campaignDetails?.prize_pool}.00
                 </h2>
+
+
                 <h3 className="text-[22px] text-[#8e989c] font-[400]">
                   Total Prize Pool
                 </h3>
