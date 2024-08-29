@@ -8,6 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 import datetime
 from functions.get_twitter_post_insights import get_tweet_info
+import requests
 
 scheduler = BackgroundScheduler()
 scheduler.start()
@@ -28,12 +29,24 @@ class Scheduler(Resource):
 
         return jsonify({"message": "Funds distribution scheduled", "job_id": job.id})
 
-def distribute_funds(payload=None):
-    response = {"message": "Funds distributed", "data": payload}
-    eligible_participants = check_likes_count(10, "0001")
-    print(eligible_participants)
-    print(response)
-    return response
+def distribute_funds(campaign_id=None):
+    eligible_participants = check_likes_count(campaign_id)
+
+    campaign_id = int(campaign_id)
+
+    message = {
+        "campaign_id": campaign_id,
+        "eligible_participants": eligible_participants["eligible_participants"],
+        "number_of_likes": eligible_participants["number_of_likes"]
+    }
+    print("disbursing funds ...")
+
+    url = "localhost:5001/campaign"
+    payload = json.dumps(message)
+    headers = {'Content-Type': 'application/json'}
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.json())
 
 def check_likes_count(minimum_likes, campaign_id):
     response = CampaignModel.get_participants(campaign_id)
@@ -55,5 +68,6 @@ def check_likes_count(minimum_likes, campaign_id):
 
     return eligible_participants
 
-
+if __name__ == "__main__":
+    app.run(debug=True)
         

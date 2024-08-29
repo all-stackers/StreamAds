@@ -976,7 +976,7 @@ const Create = () => {
             type="submit"
             className="px-[40px] bg-blue-500 text-[16px] font-[400] hover:bg-blue-600"
             onClick={() => {
-              if (campaignDate && payoutDate && campaignDate < payoutDate) {
+              if (campaignDate && payoutDate && campaignDate <= payoutDate) {
                 if (prizePool && prizePool > 0) {
                   setSteps(6);
                 } else {
