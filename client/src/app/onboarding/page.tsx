@@ -16,6 +16,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 const Onboarding = () => {
   const [checkedWallet, setCheckedWallet] = useState("");
   const [step, setStep] = useState(1);
+  const handleLogin = async () => {
+    try {
+      // Redirect to your Flask backend for Twitter OAuth
+      window.location.href = 'http://127.0.0.1:5000/login'; // Adjust URL if your backend is hosted elsewhere
+    } catch (error) {
+      console.error('Error initiating login:', error);
+    }
+  };
 
   return (
     <div className="min-h-[calc(100vh-100px)] bg-[#f5f7f7] flex flex-col justify-center items-center">
@@ -164,7 +172,8 @@ const Onboarding = () => {
                       className="h-[45px] rounded-[10px]"
                     />
                   </div>
-                  <button className="h-[30px]  text-white bg-blue-500 rounded-full px-[15px] border border-blue-500">
+                  <button className="h-[30px]  text-white bg-blue-500 rounded-full px-[15px] border border-blue-500"
+                   onClick={handleLogin}>
                     Connect
                   </button>
                 </div>
