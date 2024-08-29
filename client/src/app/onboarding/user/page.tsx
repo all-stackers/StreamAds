@@ -9,21 +9,55 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/ui/use-toast";
 
 const Onboarding = () => {
+  const { toast } = useToast();
+
   const [checkedWallet, setCheckedWallet] = useState("");
+  const [connectedWallet, setConnectedWallet] = useState(false);
   const [step, setStep] = useState(1);
+  const [twitterStatus, setTwitterStatus] = useState(false); // To store the fetched data
+
   const handleLogin = async () => {
+    const walletAddress = "0x9882be3ey3e3823b"; // Replace with actual wallet address logic
     try {
-      // Redirect to your Flask backend for Twitter OAuth
-      window.location.href = 'http://127.0.0.1:5000/login'; // Adjust URL if your backend is hosted elsewhere
+      // Redirect to Flask backend with wallet address
+      window.location.href = `http://127.0.0.1:5000/login?wallet_address=${walletAddress}`;
     } catch (error) {
-      console.error('Error initiating login:', error);
+      console.error("Error initiating login:", error);
     }
   };
+  useEffect(() => {
+    const fetchTwitterStatus = async () => {
+      if (connectedWallet) {
+        console.log("Wallet selected:", checkedWallet);
+        setStep(2);
+      }
+      // try {
+      const response = await fetch(
+        `http://localhost:5000/twitter_status?wallet_address=${"0x9882be3ey3e3823b"}`,
+        {
+          method: "GET",
+          redirect: "follow",
+        }
+      );
+      const data = await response.json();
+      console.log("Data:", data);
+      setTwitterStatus(data.status);
+      // } else {
+      // console.error("Error fetching Twitter status:", response.statusText);
+      // }
+      // } catch (error) {
+      //   console.error("Error fetching Twitter status:", error);
+      // }
+    };
+
+    fetchTwitterStatus();
+  }, [checkedWallet]); // Add checkedWallet as a dependency
 
   return (
     <div className="min-h-[calc(100vh-100px)] bg-[#f5f7f7] flex flex-col justify-center items-center">
@@ -172,10 +206,18 @@ const Onboarding = () => {
                       className="h-[45px] rounded-[10px]"
                     />
                   </div>
-                  <button className="h-[30px]  text-white bg-blue-500 rounded-full px-[15px] border border-blue-500"
-                   onClick={handleLogin}>
-                    Connect
-                  </button>
+                  {twitterStatus == true ? (
+                    <div className="bg-green-500 flex justify-center items-center text-white rounded-full w-[30px] h-[30px]">
+                      ✓
+                    </div>
+                  ) : (
+                    <button
+                      className="h-[30px]  text-white bg-blue-500 rounded-full px-[15px] border border-blue-500"
+                      onClick={handleLogin}
+                    >
+                      Connect
+                    </button>
+                  )}
                 </div>
                 <div className="flex items-center gap-x-[20px]">
                   <div className="p-[5px] bg-white border border-gray-200 rounded-lg hover:shadow-md">
@@ -185,7 +227,15 @@ const Onboarding = () => {
                       className="h-[45px] rounded-[10px]"
                     />
                   </div>
-                  <button className="h-[30px]  text-white bg-blue-500 rounded-full px-[15px] border border-blue-500">
+                  <button
+                    className="h-[30px]  text-white bg-blue-500 rounded-full px-[15px] border border-blue-500"
+                    onClick={() =>
+                      toast({
+                        variant: "destructive",
+                        description: "Instagram feature is not supported yet!",
+                      })
+                    }
+                  >
                     Connect
                   </button>
                 </div>
