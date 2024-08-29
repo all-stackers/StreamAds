@@ -20,7 +20,7 @@ import requests
 
 from resources.company import Company
 # from resources.user import User
-from resources.campaign import Campaign, AddParticipantToCampaign
+from resources.campaign import Campaign, AddParticipantToCampaign, GetCampaignParticipants
 from resources.task import Task
 from resources.scheduler import Scheduler
 # from resources.insta_post import Posts
@@ -49,6 +49,7 @@ api.add_resource(AddParticipantToCampaign,'/campaign/add_participant')
 # api.add_resource(Caption, "/caption")
 api.add_resource(Task, '/task')
 api.add_resource(Scheduler, '/schedule_funds_distribution')
+api.add_resource(GetCampaignParticipants, '/campaign/participants')
 
 
 @app.route('/testcronjob')

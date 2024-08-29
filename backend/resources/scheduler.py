@@ -7,6 +7,7 @@ from flask import Flask, request, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 import datetime
+from functions.get_twitter_post_insights import get_tweet_info
 
 scheduler = BackgroundScheduler()
 scheduler.start()
@@ -29,12 +30,14 @@ class Scheduler(Resource):
 
 def distribute_funds(payload=None):
     response = {"message": "Funds distributed", "data": payload}
-    check_likes_count(10, "0001")
-    print(response)  # Print the response to the console for confirmation
+    eligible_participants = check_likes_count(10, "0001")
+    print(eligible_participants)
+    print(response)
     return response
 
 def check_likes_count(minimum_likes, campaign_id):
     response = CampaignModel.get_participants(campaign_id)
+    eligible_participants = []
 
     if response["error"]:
         return {"error": True, "data": response["data"]}
@@ -42,14 +45,15 @@ def check_likes_count(minimum_likes, campaign_id):
     participants = response["data"]
 
     for participant in participants:
-        print(participant)
+        response = get_tweet_info(participant["twitter_post_id"])
+        if response["error"] == "true":
+            continue
 
+        likes_count = response["likes_count"]
+        if likes_count >= minimum_likes:
+            eligible_participants.append(participant["wallet_address"])
 
-def retrieve_likes_count():
-    
-
-
-
+    return eligible_participants
 
 
         
