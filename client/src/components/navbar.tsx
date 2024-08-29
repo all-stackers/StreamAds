@@ -1,30 +1,44 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-
+import { useWallet , WalletName} from "@aptos-labs/wallet-adapter-react";
 const Navabar = () => {
-  const [userAddress, setUserAddress] = React.useState("");
-    const getAptosWallet = async() => {
-      const isPetraInstalled =await  window?.aptos;
-      if ('aptos' in window) {
-        console.log(window.aptos)
-        const wallet = window.aptos;
- 
-        try {
-            // await wallet.disconnect(); //disconnect
-  const response = await wallet.connect();
-  console.log(response); // { address: string, address: string }
-     setUserAddress(response.address);
-  const account = await wallet.account();
-  console.log(account); // { address: string, address: string }
-} catch (error) {
-  // { code: 4001, message: "User rejected the request."}
-}
 
-  } else {
-    window.open('https://petra.app/', `_blank`);
+  const { connect, disconnect, account, connected } = useWallet();
+  const [userAddress, setUserAddress] = React.useState("");
+  const [publicKey, setPublicKey] = React.useState("null");
+  const getAptosWallet = async () => {
+    try {
+      
+      // Change below to the desired wallet name instead of "Petra"
+       await connect("Petra" as WalletName<"Petra">); 
+      console.log('Connected to wallet:', account);
+    } catch (error) {
+      console.error('Failed to connect to wallet:', error);
+    }
+
+    console.log("account", account);
   }
-};
+  
+  const createCampaign = async () => {
+  //   const config = new AptosConfig({ network: Network.TESTNET });
+  //   const aptos = new Aptos(config);
+  //   const modules = await aptos.getAccountModules({ accountAddress: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53" });
+  //   console.log(modules);
+  //   const transaction = await aptos.transaction.build.simple({
+  // sender: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53",
+  // data: {
+  //   function: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53::stream::create_campaign",
+  //   typeArguments: ["0x1::aptios_coin::AptosCoin"],
+  //   functionArguments: [10000000]
+  // },
+  //   });
+//     const pendingTransaction = await aptos.signAndSubmitTransaction({
+//   signer: publicKey,
+//   transaction,
+// });
+    // console.log(transaction);
+  }
 
   
   const router = useRouter();
@@ -60,7 +74,8 @@ const Navabar = () => {
             alt="avatar"
             className="h-[40px] rounded-full"
           />
-          <button onClick={() => getAptosWallet()} className="font-[500] text-gray-600"> {`${userAddress.slice(0, 3)}...${userAddress.slice(-3)}`}</button>
+          <button onClick={()=> createCampaign()}> here </button>
+          <button onClick={getAptosWallet} className="font-[500] text-gray-600"> {`${userAddress.slice(0, 3)}...${userAddress.slice(-3)}`}</button>
         </div>
       </div>
     </div>

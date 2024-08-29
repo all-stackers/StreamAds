@@ -22,8 +22,9 @@ from resources.company import Company
 from models.user import User
 
 # from resources.user import User
-from resources.campaign import Campaign
+from resources.campaign import Campaign, AddParticipantToCampaign, GetCampaignParticipants
 from resources.task import Task
+from resources.scheduler import Scheduler
 
 # from resources.insta_post import Posts
 # from resources.cloudinary import Cloudinary
@@ -41,14 +42,21 @@ db.init_app(app)
 
 api.add_resource(Company, "/company")
 # api.add_resource(User, '/user')
-api.add_resource(Campaign, "/campaign")
-# api.add_resource(AddParticipantToCampaign,'/campaign/add_participant')
+api.add_resource(Campaign, '/campaign')
+api.add_resource(AddParticipantToCampaign,'/campaign/add_participant')
 # api.add_resource(Posts,'/posts')
 # api.add_resource(Cloudinary, "/cloudinary")
 # api.add_resource(RetrieveLike, "/retrieve_likes")
 # api.add_resource(Hashtags, "/hashtag")
 # api.add_resource(Caption, "/caption")
-api.add_resource(Task, "/task")
+api.add_resource(Task, '/task')
+api.add_resource(Scheduler, '/schedule_funds_distribution')
+api.add_resource(GetCampaignParticipants, '/campaign/participants')
+
+
+@app.route('/testcronjob')
+def testcronjob():
+   return "Cron job is working"
 
 
 app.secret_key = os.urandom(24)

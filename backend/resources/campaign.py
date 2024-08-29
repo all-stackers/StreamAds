@@ -3,8 +3,15 @@ from models.campaign import Campaign as CampaignModel
 from models.company import Company as CompanyModel
 from models.user import User as UserModel
 from models.task import Task as TaskModel
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.date import DateTrigger
+from functions.get_twitter_post_insights import get_tweet_info
+import datetime
 from flask import request
 import json
+
+scheduler = BackgroundScheduler()
+scheduler.start()
 
 class Campaign(Resource):
     def post(self):
@@ -29,6 +36,13 @@ class Campaign(Resource):
 
         if response["error"]:
             return {"error": True, "data": response["data"]}, 400
+        
+        payout_time = datetime.datetime.strptime(args["payout_time"], '%Y-%m-%d %H:%M:%S')
+        job = scheduler.add_job(
+            distribute_funds,
+            trigger=DateTrigger(run_date=payout_time),
+            args=[args["campaign_id"]]
+        )
         
         return {"error": False, "data": args["campaign_id"]}, 201
     
@@ -111,12 +125,85 @@ class AddParticipantToCampaign(Resource):
         args = parser.parse_args()
 
         # pop out campaign_id from args
-        
+        campaign_id = args.pop("campaign_id")
 
-
-        response = CampaignModel.add_participant()
+        response = CampaignModel.add_participant(campaign_id, args)
 
         if response["error"]:
             return {"error": True, "data": response["data"]}, 400
         
         return {"error": False, "data": response["data"]}, 200
+    
+def distribute_funds(campaign_id=None):
+    eligible_participants = check_likes_count(campaign_id)
+    print("eligible participants: ", eligible_participants)
+    return {"message": "Funds distributed"}
+
+def check_likes_count(campaign_id):
+    response = CampaignModel.get_campaign(campaign_id)
+    if response["error"]:
+        return {"error": True, "data": response["data"]}
+    
+    minimum_likes = response["data"]["minimum_likes"]
+
+    response = CampaignModel.get_participants(campaign_id)
+    if response["error"]:
+        return {"error": True, "data": response["data"]}
+    
+    participants = response["data"]
+    eligible_participants = []
+    number_of_likes = []
+
+    for participant in participants:
+        response = get_tweet_info(participant["twitter_post_id"])
+        if response["error"] == "true":
+            continue
+
+        likes_count = response["likes_count"]
+        if likes_count >= minimum_likes:
+            eligible_participants.append(participant["wallet_address"])
+            number_of_likes.append(likes_count)
+
+    data = {
+        "eligible_participants": eligible_participants,
+        "number_of_likes": number_of_likes
+    }
+
+    return data
+
+
+class GetCampaignParticipants(Resource):
+    def get(self):
+        campaign_id = request.args.get("campaign_id")
+        
+        response = CampaignModel.get_participants(campaign_id)
+        if response["error"]:
+            return {"error": True, "data": response["data"]}, 400
+        
+        participants = response["data"]
+        print("participants: ", participants)
+        final_data = []
+
+        for participant in participants:
+            data = {
+                "twitter_post_id": participant["twitter_post_id"],
+                "likes_count": 0,
+                "comment_count": 0,
+                "retweet_count": 0,
+                "quote_count": 0
+            }
+            response = get_tweet_info(participant["twitter_post_id"])
+            if response["error"] == "true":
+                continue
+            data["likes_count"] = response["likes_count"]
+            data["comment_count"] = response["comment_count"]
+            data["retweet_count"] = response["retweet_count"]
+            data["quote_count"] = response["quote_count"]
+
+            final_data.append(data)
+
+        print("final_data: ", final_data)
+
+        
+        return {"error": False, "data": final_data}, 200
+
