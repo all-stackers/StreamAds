@@ -78,4 +78,15 @@ class Campaign(db.Document):
         except Exception as e:
             return {'error': True, 'data': str(e)}
 
+    @classmethod
+    def get_participants(cls, campaign_id):
+        try:
+            campaign = cls.objects(campaign_id=campaign_id).first()
+            if not campaign:
+                return {'error': True, 'data': 'Campaign not found'}
+            
+            return {'error': False, 'data': campaign.participants}
+
+        except Exception as e:
+            return {'error': True, 'data': str(e)}
     

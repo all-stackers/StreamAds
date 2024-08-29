@@ -22,6 +22,7 @@ from resources.company import Company
 # from resources.user import User
 from resources.campaign import Campaign, AddParticipantToCampaign
 from resources.task import Task
+from resources.scheduler import Scheduler
 # from resources.insta_post import Posts
 # from resources.cloudinary import Cloudinary
 # from resources.retrieve_likes import  RetrieveLike
@@ -47,9 +48,12 @@ api.add_resource(AddParticipantToCampaign,'/campaign/add_participant')
 # api.add_resource(Hashtags, "/hashtag")
 # api.add_resource(Caption, "/caption")
 api.add_resource(Task, '/task')
+api.add_resource(Scheduler, '/schedule_funds_distribution')
 
 
-
+@app.route('/testcronjob')
+def testcronjob():
+   return "Cron job is working"
 
 
 
