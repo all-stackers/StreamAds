@@ -259,6 +259,7 @@ const Create = () => {
 
           if (!taskResult.error) {
             const aptAmount = prizePool * 100000000;
+            console.log(account?.address)
      const response = await signAndSubmitTransaction({
        sender: account.address,
       data: {
