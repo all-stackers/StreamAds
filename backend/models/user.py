@@ -18,6 +18,14 @@ class User(db.Document):
             return {"error": True, "message": str(e)}
 
     @classmethod
+    def get_first_user(cls):
+        try:
+            user = cls.objects().first()
+            return {"error": False, "data": user}
+        except Exception as e:
+            return {"error": True, "message": str(e)}
+
+    @classmethod
     def get_all_users(cls):
         try:
             users = cls.objects()

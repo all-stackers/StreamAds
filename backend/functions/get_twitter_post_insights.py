@@ -5,6 +5,7 @@ import os
 from requests_oauthlib import OAuth1
 import requests
 import json
+from models.user import User as UserModel
 
 def get_tweet_details(tweet_id, auth):
     url = f"https://api.twitter.com/2/tweets/{tweet_id}?tweet.fields=public_metrics"
@@ -16,12 +17,23 @@ def get_tweet_details(tweet_id, auth):
     return response.json()
 
 def get_liking_users(tweet_id=None):
+    response = UserModel.get_first_user()
+    if response["error"]:
+        return {"error": True, "data": response["data"]}
+    
+    user = response["data"]
+
+    print("User: ", user["oauth_token"])
+    print("kdjlkfjsld", user["oauth_token_secret"])
+
     auth = OAuth1(
         os.environ.get("APTOS_CONSUMER_KEY"),
         os.environ.get("APTOS_CONSUMER_SECRET"),
-        os.environ.get("APTOS_ACCESS_TOKEN"),
-        os.environ.get("APTOS_ACCESS_TOKEN_SECRET")
+        user["oauth_token"],
+        user["oauth_token_secret"]
     )
+
+    print("Auth: ", auth)
     
     likes_url = f"https://api.twitter.com/2/tweets/{tweet_id}/liking_users"
     likes_headers = {"User-Agent": "v2LikingUsersPython"}
