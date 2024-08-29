@@ -29,6 +29,11 @@ import { Button } from "@/components/ui/button";
 import { set } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { useRef } from "react";
+
+import axios from "axios";
+import TwitterPreview from "@/components/TwitterPreview";
+import Timer from "@/components/Timer";
 
 interface Participant {
   wallet_address: string;
@@ -77,13 +82,14 @@ interface Task {
   quote_tweet_url?: string; // URL of the tweet to quote
 }
 
-const devfolio = ({ params }: { params: { campaignId: string } }) => {
+const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
   const { toast } = useToast();
   const router = useRouter();
   const [steps, setSteps] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [twitterQuoteText, setTwitterQuoteText] = useState<string>("");
-  const [tweetHtml, setTweetHtml] = useState("");
+
+  const quoteTextRef = useRef("");
 
   const highlightHashtags = (text: string) => {
     const regex = /#\w+/g;
@@ -98,30 +104,6 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
     });
   };
 
-  const calculateTimeLeft = (
-    endTime: number
-  ): { days: number; hours: number; minutes: number; seconds: number } => {
-    const now = new Date().getTime();
-    const distance = endTime - now;
-
-    if (distance < 0) {
-      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-    }
-
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor(
-      (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-    );
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-    return { days, hours, minutes, seconds };
-  };
-
-  const [endTime, setEndTime] = useState(
-    new Date().getTime() + 1000 * 60 * 60 * 48
-  ); // 2 days from now
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(endTime));
   const [campaignDetails, setCampaignDetails] = useState<
     CampaignDetails | undefined
   >(undefined);
@@ -144,62 +126,6 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    if (campaignDetails && campaignDetails.end_time) {
-      const endTime = new Date(campaignDetails.end_time).getTime();
-      setEndTime(endTime);
-    }
-  }, [campaignDetails]);
-
-  useEffect(() => {
-    const fetchTweetEmbed = async () => {
-      console.log("Fetching tweet embed...");
-      try {
-        const retweetUrl = campaignDetails?.task?.retweet_url;
-
-        if (!retweetUrl) return;
-
-        const proxyUrl = "https://crossorigin.me/";
-        const twitterApiUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(
-          retweetUrl
-        )}`;
-
-        const response = await fetch(
-          `${proxyUrl}${encodeURIComponent(twitterApiUrl)}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            redirect: "follow" as RequestRedirect,
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch tweet data");
-        }
-
-        const result = await response.json();
-
-        console.log(result);
-
-        // Store the HTML blockquote in state
-        setTweetHtml(result.html);
-      } catch (error) {
-        console.error("Error fetching tweet embed:", error);
-      }
-    };
-    if (campaignDetails?.task?.retweet == true) fetchTweetEmbed();
-  }, [campaignDetails]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(calculateTimeLeft(endTime));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [endTime]);
 
   const handlePost = async () => {
     setLoading(true);
@@ -248,6 +174,7 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
   };
 
   const handleQuoteTwitterPost = async () => {
+    const quoteText = quoteTextRef.current;
     setLoading(true);
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
@@ -257,7 +184,7 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
     console.log(quoteTweetId);
 
     const postData = {
-      quote_text: twitterQuoteText,
+      quote_text: quoteText,
       quote_tweet_id: quoteTweetId,
       wallet_address: "0x8393894894",
     };
@@ -278,11 +205,14 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
       console.log(result);
 
       if (!result.error) {
-        setLoading(false);
-        setSteps(1);
         toast({
           description: result.msg,
         });
+        participatePost(
+          result.tweet_id,
+          campaignDetails?.task?.campaign_id ?? "",
+          "0x8393894894"
+        );
       } else {
         setLoading(false);
         toast({
@@ -326,11 +256,14 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
       const result = await response.json();
 
       if (!result.error) {
-        setLoading(false);
-        setSteps(1);
         toast({
           description: result.msg + ` Tweet ID: ${result.tweet_id}`,
         });
+        participatePost(
+          result.tweet_id,
+          campaignDetails?.task?.campaign_id ?? "",
+          "0x8393894894"
+        );
       } else {
         setLoading(false);
         toast({
@@ -373,11 +306,14 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
       const result = await response.json();
 
       if (!result.error) {
-        setLoading(false);
-        setSteps(1);
         toast({
           description: result.msg + ` Tweet ID: ${result.tweet_id}`,
         });
+        participatePost(
+          result.tweet_id,
+          campaignDetails?.task?.campaign_id ?? "",
+          "0x8393894894"
+        );
       } else {
         setLoading(false);
         toast({
@@ -395,7 +331,55 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
     }
   };
 
-  console.log(tweetHtml);
+  const participatePost = async (
+    post_id: string,
+    campaign_id: string,
+    wallet_address: string
+  ) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      campaign_id: campaign_id,
+      wallet_address: wallet_address,
+      twitter_post_id: post_id,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+    };
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/campaign/add_participant",
+        requestOptions
+      );
+      const result = await response.json();
+
+      if (!result.error) {
+        setLoading(false);
+        setSteps(1);
+        toast({
+          description: result.data,
+        });
+      } else {
+        setLoading(false);
+        toast({
+          variant: "destructive",
+          description: result.data,
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+      toast({
+        variant: "destructive",
+        description: "Error while storing participant details.",
+      });
+    }
+  };
 
   const dialogContent = [
     {
@@ -517,7 +501,9 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
                       <p className="text-blue-400 underline cursor-pointer">
                         {campaignDetails.task.retweet_url}
                       </p>
-                      <div dangerouslySetInnerHTML={{ __html: tweetHtml }} />
+                      <TwitterPreview
+                        url={campaignDetails.task.retweet_url ?? ""}
+                      />
                       <div className="flex w-full gap-x-[5px]">
                         <img
                           className="w-[30px] h-[30px]"
@@ -526,13 +512,19 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
                         />
                         <Textarea
                           className="focus-visible:ring-0 border-0 focus-visible:ring-transparent dark:focus-visible:ring-transparent"
-                          value={twitterQuoteText}
                           placeholder="What is your Quote?!"
-                          onChange={(e) => setTwitterQuoteText(e.target.value)}
+                          onChange={(e) => {
+                            e.preventDefault();
+                            quoteTextRef.current = e.target.value;
+                          }}
                         />
                       </div>
                     </div>
-                  ) : null}
+                  ) : (
+                    <TwitterPreview
+                      url={campaignDetails?.task.retweet_url ?? ""}
+                    />
+                  )}
                 </>
               )}
             </>
@@ -548,6 +540,7 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
               if (campaignDetails?.task?.platform == "instagram") {
                 handlePost();
               } else {
+                let postId = "";
                 if (campaignDetails?.task?.retweet == false) {
                   if (campaignDetails?.task?.tweet_media_url) {
                     handleTwitterWithMediaPost();
@@ -684,15 +677,15 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
                   </p>
                 </div>
 
-                <div className="mt-2 bg-gray-100 border w-[60%] ml-[25px] h-20 border-gray-200 rounded-lg p-4 mb-[25px]">
+                {/* <div className="mt-2 bg-gray-100 border w-[60%] ml-[25px] h-20 border-gray-200 rounded-lg p-4 mb-[25px]">
                   <div className="text-xs text-gray-400 font-bold mb-2">
-                    APPLICATIONS CLOSES IN
+                    APPLICATION CLOSES IN
                   </div>
                   <div className="text-md font-semibold mt-3">
                     {`${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s left`}
                   </div>
-                </div>
-
+                </div> */}
+                <Timer end_time={campaignDetails.end_time} />
                 <CardFooter>
                   <div className="flex justify-between w-full">
                     <div className="flex gap-x-[10px]">
@@ -741,7 +734,7 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
                 </div>
               ) : (
                 <div className="flex w-[40%] border rounded-[10px] justify-center items-center">
-                  {campaignDetails?.task?.retweet == false ? (
+                  {campaignDetails?.task?.retweet === false ? (
                     <div className="flex flex-col min-h-full px-[15px] py-[10px] gap-y-[10px]">
                       <div className="flex gap-x-[10px]">
                         <img
@@ -762,7 +755,13 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
                         </div>
                       )}
                     </div>
-                  ) : null}
+                  ) : (
+                    <div className="min-h-full max-h-[360px] overflow-y-auto scrollbar-hide">
+                      <TwitterPreview
+                        url={campaignDetails.task?.retweet_url || ""}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -845,4 +844,4 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
   );
 };
 
-export default devfolio;
+export default CampaignDetails;

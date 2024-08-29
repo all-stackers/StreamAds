@@ -107,11 +107,11 @@ const Campaigns = () => {
   };
 
   const navigate = (campaignId: string) => {
-    router.push(`/campaignDetails/${campaignId}`);
+    router.push(`/company/campaignDetails/${campaignId}`);
   }
 
   const navigateToParticipantsPage = (campaignId: string) => {
-    router.push(`/campaign/participants/${campaignId}`);
+    router.push(`/company/campaign/participants/${campaignId}`);
   }
 
   return (
@@ -267,7 +267,7 @@ const Campaigns = () => {
               <Button
                 className="flex items-center gap-x-[10px] text-[16px] text-[#3770ff] font-[500] bg-[#b3ceff] rounded-[10px] hover:bg-blue-500 hover:text-white"
                 onClick={() => {
-                  router.push("/campaign/create");
+                  router.push("/company/campaign/create");
                 }}
               >
                 Create Campaign
