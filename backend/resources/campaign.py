@@ -206,3 +206,4 @@ class GetCampaignParticipants(Resource):
 
         
         return {"error": False, "data": final_data}, 200
+

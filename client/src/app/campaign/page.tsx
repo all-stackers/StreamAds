@@ -14,15 +14,19 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface Participant {
+  wallet_address: string;
+  instagram_post_id: string | null;
+  twitter_post_id: string | null;
+}
+
 interface Campaign {
   campaign_id: string;
   campaign_name: string;
   campaign_description: string;
   company_name: string;
-  company_logo: string;
   company_twitter: string;
   company_website: string;
-  media_url: string;
   start_time: string;
   end_time: string;
   payout_time: string;
@@ -32,7 +36,8 @@ interface Campaign {
   minimum_likes: number;
   followers: string;
   minimum_followers: number;
-  participants: any[]; // Adjust based on actual structure of participants
+  participants: Participant[];
+  task_id: string;
 }
 
 interface ApiResponse {
@@ -62,11 +67,7 @@ const Campaigns = () => {
         requestOptions
       );
       const result: ApiResponse = await response.json();
-
-      // Parse the stringified JSON array directly
-      const parsedResult: Campaign[] = JSON.parse(result.data);
-
-      console.log(parsedResult);
+      const parsedResult: Campaign[] = result.data;
       setAllCampaigns(parsedResult);
       setLoading(false);
     } catch (error) {
@@ -158,7 +159,7 @@ const Campaigns = () => {
                   {Array(4)
                     .fill(null)
                     .map((_, index) => (
-                      <div className="flex flex-col space-y-3">
+                      <div className="flex flex-col space-y-3" key={index}>
                         <Skeleton className="h-[125px] w-full rounded-xl bg-blue-100" />
                         <div className="space-y-2">
                           <Skeleton className="h-4 w-full bg-blue-100" />
@@ -295,7 +296,7 @@ const Campaigns = () => {
                   {Array(4)
                     .fill(null)
                     .map((_, index) => (
-                      <div className="flex flex-col space-y-3">
+                      <div className="flex flex-col space-y-3" key={index}>
                         <Skeleton className="h-[125px] w-full rounded-xl bg-blue-100" />
                         <div className="space-y-2">
                           <Skeleton className="h-4 w-full bg-blue-100" />
