@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { set } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Participant {
   wallet_address: string;
@@ -53,14 +54,36 @@ interface CampaignDetails {
   minimum_followers: number;
   participants: Participant[];
   task_id: string;
+  task: Task;
 }
 
+interface Task {
+  task_id: string; // Unique identifier for the task
+  campaign_id: string; // Associated campaign ID
+  platform: string; // Platform type, e.g., Instagram or Twitter
+
+  // Instagram-related fields
+  media_type?: string; // Type of media (image, video, etc.)
+  media_url?: string; // URL of the media
+  caption?: string; // Caption for the Instagram post
+
+  // Twitter-related fields
+  tweet?: boolean; // Indicates if this task involves a tweet
+  tweet_text?: string; // Text of the tweet
+  tweet_media_url?: string; // URL of media attached to the tweet
+  retweet?: boolean; // Indicates if this task involves a retweet
+  retweet_url?: string; // URL of the tweet to retweet
+  quote_tweet?: boolean; // Indicates if this task involves a quote tweet
+  quote_tweet_url?: string; // URL of the tweet to quote
+}
 
 const devfolio = ({ params }: { params: { campaignId: string } }) => {
   const { toast } = useToast();
   const router = useRouter();
   const [steps, setSteps] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+  const [twitterQuoteText, setTwitterQuoteText] = useState<string>("");
+  const [tweetHtml, setTweetHtml] = useState("");
 
   const highlightHashtags = (text: string) => {
     const regex = /#\w+/g;
@@ -130,6 +153,47 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
   }, [campaignDetails]);
 
   useEffect(() => {
+    const fetchTweetEmbed = async () => {
+      console.log("Fetching tweet embed...");
+      try {
+        const retweetUrl = campaignDetails?.task?.retweet_url;
+
+        if (!retweetUrl) return;
+
+        const proxyUrl = "https://crossorigin.me/";
+        const twitterApiUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(
+          retweetUrl
+        )}`;
+
+        const response = await fetch(
+          `${proxyUrl}${encodeURIComponent(twitterApiUrl)}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            redirect: "follow" as RequestRedirect,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch tweet data");
+        }
+
+        const result = await response.json();
+
+        console.log(result);
+
+        // Store the HTML blockquote in state
+        setTweetHtml(result.html);
+      } catch (error) {
+        console.error("Error fetching tweet embed:", error);
+      }
+    };
+    if (campaignDetails?.task?.retweet == true) fetchTweetEmbed();
+  }, [campaignDetails]);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft(calculateTimeLeft(endTime));
     }, 1000);
@@ -143,13 +207,15 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
     myHeaders.append("Content-Type", "application/json");
 
     const postData = {
-      media_type: campaignDetails?.media_type.includes("video")
-        ? "REELS"
-        : "IMAGE",
-      media_url: campaignDetails?.media_url,
-      caption: campaignDetails?.caption,
-      campaign_id: campaignDetails?.campaign_id,
-      wallet_address: "0xx14"
+      media_type:
+        campaignDetails?.task?.media_type &&
+        campaignDetails?.task?.media_type.includes("video")
+          ? "REELS"
+          : "IMAGE",
+      media_url: campaignDetails?.task?.media_url,
+      caption: campaignDetails?.task?.caption,
+      campaign_id: campaignDetails?.task?.campaign_id,
+      wallet_address: "0xx14",
     };
 
     const requestOptions = {
@@ -176,11 +242,160 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
         variant: "destructive",
         description: "Error while posting on Instagram.",
       });
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
+
+  const handleQuoteTwitterPost = async () => {
+    setLoading(true);
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const quoteTweetId =
+      campaignDetails?.task?.retweet_url?.split("/").pop() ?? "";
+    console.log(quoteTweetId);
+
+    const postData = {
+      quote_text: twitterQuoteText,
+      quote_tweet_id: quoteTweetId,
+      wallet_address: "0x8393894894",
+    };
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: JSON.stringify(postData),
+      redirect: "follow" as RequestRedirect,
+    };
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/quote-tweet",
+        requestOptions
+      );
+      const result = await response.json();
+      console.log(result);
+
+      if (!result.error) {
+        setLoading(false);
+        setSteps(1);
+        toast({
+          description: result.msg,
+        });
+      } else {
+        setLoading(false);
+        toast({
+          variant: "destructive",
+          description: result.msg,
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+      toast({
+        variant: "destructive",
+        description: "Error while posting on Twitter.",
+      });
+    }
+  };
+
+  const handleTwitterWithMediaPost = async () => {
+    setLoading(true);
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const postData = {
+      media_url: campaignDetails?.task?.tweet_media_url,
+      tweet_text: campaignDetails?.task?.tweet_text,
+      wallet_address: "0x8393894894",
+    };
+
+    const requestOptions: RequestInit = {
+      method: "POST",
+      headers: myHeaders,
+      body: JSON.stringify(postData),
+      redirect: "follow",
+    };
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/tweet_with_media",
+        requestOptions
+      );
+      const result = await response.json();
+
+      if (!result.error) {
+        setLoading(false);
+        setSteps(1);
+        toast({
+          description: result.msg + ` Tweet ID: ${result.tweet_id}`,
+        });
+      } else {
+        setLoading(false);
+        toast({
+          variant: "destructive",
+          description: result.msg,
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+      toast({
+        variant: "destructive",
+        description: "Error while posting on Twitter.",
+      });
+    }
+  };
+
+  const handleTwitterPost = async () => {
+    setLoading(true);
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const postData = {
+      tweet_text: campaignDetails?.task?.tweet_text,
+      wallet_address: "0x8393894894",
+    };
+
+    const requestOptions: RequestInit = {
+      method: "POST",
+      headers: myHeaders,
+      body: JSON.stringify(postData),
+      redirect: "follow",
+    };
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/tweet",
+        requestOptions
+      );
+      const result = await response.json();
+
+      if (!result.error) {
+        setLoading(false);
+        setSteps(1);
+        toast({
+          description: result.msg + ` Tweet ID: ${result.tweet_id}`,
+        });
+      } else {
+        setLoading(false);
+        toast({
+          variant: "destructive",
+          description: result.msg,
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+      toast({
+        variant: "destructive",
+        description: "Error while posting on Twitter.",
+      });
+    }
+  };
+
+  console.log(tweetHtml);
 
   const dialogContent = [
     {
@@ -188,88 +403,140 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
       description: "",
       content: (
         <div className="flex flex-col justify-center items-center mb-[15px]">
-          <div className="p-[10px] border-[1px] max-w-[320px] shadow-md rounded-[10px]">
-            <div className="flex items-center gap-x-[20px] px-[10px] py-[5px] border-b-[1px]">
-              <img className="h-[30px]" src="/assets/images/user.png"></img>
-              <p className="font-bold">allstackers</p>
+          {campaignDetails?.task?.platform == "instagram" ? (
+            <div className="p-[10px] border-[1px] max-w-[320px] shadow-md rounded-[10px]">
+              <div className="flex items-center gap-x-[20px] px-[10px] py-[5px] border-b-[1px]">
+                <img className="h-[30px]" src="/assets/images/user.png"></img>
+                <p className="font-bold">allstackers</p>
+              </div>
+              <div className="flex flex-col items-center justify-center bg-gray-200 h-[300px]">
+                {campaignDetails?.task?.media_url && (
+                  <>
+                    {campaignDetails?.task?.media_type &&
+                    campaignDetails?.task?.media_type.includes("video") ? (
+                      <video
+                        className="w-[100%]"
+                        src={campaignDetails?.task?.media_url}
+                        autoPlay={true}
+                        loop={true}
+                      ></video>
+                    ) : (
+                      <img
+                        className="w-[100%] object-cover"
+                        src={campaignDetails?.task?.media_url}
+                        alt="Selected"
+                      ></img>
+                    )}
+                  </>
+                )}
+              </div>
+              <div className="mt-[10px]">
+                <div className="flex gap-x-[10px]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                    />
+                  </svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z"
+                    />
+                  </svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                    />
+                  </svg>
+                </div>
+                <div className="py-[10px]">
+                  <p>
+                    {campaignDetails?.task?.caption?.length &&
+                    campaignDetails?.task?.caption?.length > 0 ? (
+                      highlightHashtags(campaignDetails?.task?.caption)
+                    ) : (
+                      <em className="font-light">No Caption Added</em>
+                    )}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col items-center justify-center bg-gray-200 h-[300px]">
-              {campaignDetails?.media_url && (
-                <>
-                  {campaignDetails?.media_type.includes("video") ? (
-                    <video
-                      className="w-[100%]"
-                      src={campaignDetails?.media_url}
-                      autoPlay={true}
-                      loop={true}
-                    ></video>
-                  ) : (
+          ) : (
+            <>
+              {campaignDetails?.task?.retweet == false ? (
+                <div className="flex flex-col min-h-full px-[15px] py-[10px] gap-y-[10px]">
+                  <div className="flex gap-x-[10px]">
                     <img
-                      className="w-[100%] object-cover"
-                      src={campaignDetails?.media_url}
-                      alt="Selected"
-                    ></img>
+                      className="w-[30px] h-[30px]"
+                      src="/assets/images/twitter.png"
+                      alt="twitter"
+                    />
+                    <p className="text-black">
+                      {campaignDetails?.task?.tweet_text}
+                    </p>
+                  </div>
+                  {campaignDetails.task.tweet_media_url && (
+                    <div className="flex flex-col items-center px-[20px]">
+                      <img
+                        className="border-[1px] rounded-lg shadow-sm"
+                        src={campaignDetails.task.tweet_media_url}
+                      />
+                    </div>
                   )}
+                </div>
+              ) : (
+                <>
+                  {campaignDetails?.task?.quote_tweet == true ? (
+                    <div className="flex flex-col gap-y-[20px]">
+                      <p className="text-blue-400 underline cursor-pointer">
+                        {campaignDetails.task.retweet_url}
+                      </p>
+                      <div dangerouslySetInnerHTML={{ __html: tweetHtml }} />
+                      <div className="flex w-full gap-x-[5px]">
+                        <img
+                          className="w-[30px] h-[30px]"
+                          src="/assets/images/twitter.png"
+                          alt="twitter"
+                        />
+                        <Textarea
+                          className="focus-visible:ring-0 border-0 focus-visible:ring-transparent dark:focus-visible:ring-transparent"
+                          value={twitterQuoteText}
+                          placeholder="What is your Quote?!"
+                          onChange={(e) => setTwitterQuoteText(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
                 </>
               )}
-            </div>
-            <div className="mt-[10px]">
-              <div className="flex gap-x-[10px]">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-                  />
-                </svg>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z"
-                  />
-                </svg>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
-                  />
-                </svg>
-              </div>
-              <div className="py-[10px]">
-                <p>
-                  {campaignDetails?.caption?.length &&
-                    campaignDetails?.caption?.length > 0 ? (
-                    highlightHashtags(campaignDetails?.caption)
-                  ) : (
-                    <em className="font-light">No Caption Added</em>
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       ),
       footer: (
@@ -277,12 +544,30 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
           <Button
             type="submit"
             className="px-[40px] bg-blue-500 text-[16px] font-[400] hover:bg-blue-600"
-            onClick={handlePost}
+            onClick={() => {
+              if (campaignDetails?.task?.platform == "instagram") {
+                handlePost();
+              } else {
+                if (campaignDetails?.task?.retweet == false) {
+                  if (campaignDetails?.task?.tweet_media_url) {
+                    handleTwitterWithMediaPost();
+                  } else {
+                    handleTwitterPost();
+                  }
+                } else {
+                  handleQuoteTwitterPost();
+                }
+              }
+            }}
           >
             {loading ? (
               <ScaleLoader color="#fff" loading={loading} />
             ) : (
-              "Post on Instagram"
+              `Post on ${
+                campaignDetails?.task?.platform == "instagram"
+                  ? "Instagram"
+                  : "Twitter"
+              }`
             )}
           </Button>
         </div>
@@ -430,28 +715,56 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
                 </CardFooter>
               </Card>
 
-              <div className="flex w-[40%] bg-gray-200 rounded-[10px] justify-center items-center">
-                {campaignDetails?.media_url && (
-                  <>
-                    {campaignDetails?.media_type.includes("video") ? (
-                      <video
-                        className="h-[100%] rounded-[10px]"
-                        src={campaignDetails?.media_url}
-                        autoPlay={true}
-                        muted={true}
-                        controls={true}
-                        loop={true}
-                      ></video>
-                    ) : (
-                      <img
-                        className="h-[100%]"
-                        src={campaignDetails?.media_url}
-                        alt="Selected"
-                      ></img>
-                    )}
-                  </>
-                )}
-              </div>
+              {campaignDetails?.task?.platform == "instagram" ? (
+                <div className="flex w-[40%] bg-gray-200 rounded-[10px] justify-center items-center">
+                  {campaignDetails?.task?.media_url && (
+                    <>
+                      {campaignDetails?.task?.media_type &&
+                      campaignDetails?.task?.media_type.includes("video") ? (
+                        <video
+                          className="h-[100%] rounded-[10px]"
+                          src={campaignDetails?.task?.media_url}
+                          autoPlay={true}
+                          muted={true}
+                          controls={true}
+                          loop={true}
+                        ></video>
+                      ) : (
+                        <img
+                          className="h-[100%]"
+                          src={campaignDetails?.task?.media_url}
+                          alt="Selected"
+                        ></img>
+                      )}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="flex w-[40%] border rounded-[10px] justify-center items-center">
+                  {campaignDetails?.task?.retweet == false ? (
+                    <div className="flex flex-col min-h-full px-[15px] py-[10px] gap-y-[10px]">
+                      <div className="flex gap-x-[10px]">
+                        <img
+                          className="w-[30px] h-[30px]"
+                          src="/assets/images/twitter.png"
+                          alt="twitter"
+                        />
+                        <p className="text-black">
+                          {campaignDetails?.task?.tweet_text}
+                        </p>
+                      </div>
+                      {campaignDetails.task.tweet_media_url && (
+                        <div className="flex flex-col items-center px-[20px]">
+                          <img
+                            className="border-[1px] h-[200px] rounded-lg shadow-sm"
+                            src={campaignDetails.task.tweet_media_url}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md mt-5 mb-5">
@@ -464,7 +777,6 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
                   />
                   {campaignDetails?.prize_pool}.00
                 </h2>
-
 
                 <h3 className="text-[22px] text-[#8e989c] font-[400]">
                   Total Prize Pool
