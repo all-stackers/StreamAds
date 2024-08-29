@@ -14,16 +14,24 @@ import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 
+import { useWallet, WalletName } from "@aptos-labs/wallet-adapter-react";
+
+import { ScaleLoader } from "react-spinners";
+
 const Onboarding = () => {
   const { toast } = useToast();
+  const { account, connect, connected, wallet, changeNetwork, isLoading } =
+    useWallet();
 
   const [checkedWallet, setCheckedWallet] = useState("");
   const [connectedWallet, setConnectedWallet] = useState(false);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [twitterStatus, setTwitterStatus] = useState(false); // To store the fetched data
+  const [loading, setLoading] = useState(false);
+  const [isLoadingPage, setIsLoadingPage] = useState(isLoading);
 
   const handleLogin = async () => {
-    const walletAddress = "0x9882be3ey3e3823b"; // Replace with actual wallet address logic
+    const walletAddress = account?.address; // Replace with actual wallet address logic
     try {
       // Redirect to Flask backend with wallet address
       window.location.href = `http://127.0.0.1:5000/login?wallet_address=${walletAddress}`;
@@ -31,34 +39,59 @@ const Onboarding = () => {
       console.error("Error initiating login:", error);
     }
   };
+  const getAptosWallet = async () => {
+    setLoading(true);
+    if (connected == false) {
+      try {
+        await connect("Petra" as WalletName<"Petra">);
+        setStep(2);
+        setConnectedWallet(true);
+        console.log("Connected to wallet:", account);
+        console.log(connected);
+        setStep(2);
+      } catch (error) {
+        console.error("Failed to connect to wallet:", error);
+      }
+    } else {
+      console.log("Wallet already connected:", account);
+      setConnectedWallet(true);
+      setStep(2);
+    }
+    setLoading(false);
+    console.log("account", account);
+  };
   useEffect(() => {
     const fetchTwitterStatus = async () => {
-      if (connectedWallet) {
-        console.log("Wallet selected:", checkedWallet);
-        setStep(2);
+      try {
+        const response = await fetch(
+          `http://localhost:5000/twitter_status?wallet_address=${account?.address}`,
+          {
+            method: "GET",
+            redirect: "follow",
+          }
+        );
+        const data = await response.json();
+        console.log("Data:", data);
+        setTwitterStatus(data.status);
+      } catch (error) {
+        console.error("Error fetching Twitter status:", error);
       }
-      // try {
-      const response = await fetch(
-        `http://localhost:5000/twitter_status?wallet_address=${"0x9882be3ey3e3823b"}`,
-        {
-          method: "GET",
-          redirect: "follow",
-        }
-      );
-      const data = await response.json();
-      console.log("Data:", data);
-      setTwitterStatus(data.status);
-      // } else {
-      // console.error("Error fetching Twitter status:", response.statusText);
-      // }
-      // } catch (error) {
-      //   console.error("Error fetching Twitter status:", error);
-      // }
     };
 
-    fetchTwitterStatus();
-  }, [checkedWallet]); // Add checkedWallet as a dependency
-
+    if (connected) {
+      setConnectedWallet(true);
+      console.log("Wallet selected: ", account);
+      setStep(2);
+      fetchTwitterStatus();
+    } else {
+      setStep(1);
+    }
+  }, [connected]); // Add checkedWallet as a dependency
+  useEffect(() => {
+    setIsLoadingPage(isLoading);
+  }, [isLoading]);
+  console.log(isLoadingPage);
+  console.log(isLoading);
   return (
     <div className="min-h-[calc(100vh-100px)] bg-[#f5f7f7] flex flex-col justify-center items-center">
       <div className="flex flex-col py-[20px] max-w-[500px] gap-y-[30px] justify-center items-center">
