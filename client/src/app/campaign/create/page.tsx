@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,11 +16,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileUploader } from "react-drag-drop-files";
 import { useToast } from "@/components/ui/use-toast";
 
-import { addDays, format, set } from "date-fns";
+import { addDays, format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
+
 import {
   Popover,
   PopoverContent,
@@ -33,12 +34,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Switch } from "@/components/ui/switch";
 
 import ScaleLoader from "react-spinners/ScaleLoader";
 
 import { useRouter } from "next/navigation";
 import { PinataSDK } from "pinata";
+
+import { CTimePicker } from "@coreui/react-pro";
+import "@coreui/coreui-pro/dist/css/coreui.min.css";
 
 const hashtags = ["#hash1", "#hash2", "#hash3", "#hash4"];
 const Create = () => {
@@ -48,33 +55,65 @@ const Create = () => {
   const [caption, setCaption] = useState<string>("");
   const [steps, setSteps] = useState<number>(0);
   const [campaignDate, setCampaignDate] = React.useState<Date>();
+  const [campaignTime, setCampaignTime] = React.useState<string>();
   const [payoutDate, setPayoutDate] = React.useState<Date>();
+  const [payoutTime, setPayoutTime] = React.useState<string>();
   const [prizePool, setPrizePool] = React.useState<number>();
   const [likes, setLikes] = React.useState<boolean>(false);
   const [likesCount, setLikesCount] = React.useState<number>(0);
   const [followers, setFollowers] = React.useState<boolean>(false);
   const [followersCount, setFollowersCount] = React.useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("");
+  const [twitterText, setTwitterText] = useState<string>("");
+  const [quoteTweet, setQuoteTweet] = useState<boolean>(false);
+  const [retweetUrl, setRetweetUrl] = useState<string>("");
+  const [retweet, setRetweet] = useState<boolean>(false);
+  const [tweetMedia, setTweetMedia] = useState<any>(null);
 
   const { toast } = useToast();
   const router = useRouter();
+
+  const fileInputTwitterImage = useRef<HTMLInputElement>(null);
+
+  const fileInputTwitterVideo = useRef<HTMLInputElement>(null);
 
   const pinata = new PinataSDK({
     pinataJwt: process.env.NEXT_PUBLIC_PINATA_JWT,
     pinataGateway: process.env.NEXT_PUBLIC_PINATA_ENDPOINT,
   });
-
   const handleChange = (uploadedFile: any) => {
     if (uploadedFile) {
       setFile(uploadedFile);
     }
   };
-  const formatDate = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}T23:59:59Z`;
-  };
+
+  function formatDateTime(Date2: Date, Time: string): string {
+    // Parse the time from the campaignTime string
+    const timeParts = Time.split(" ")[0].split(":");
+    const hours = parseInt(timeParts[0]);
+    const minutes = parseInt(timeParts[1]);
+    const seconds = parseInt(timeParts[2]);
+
+    // Create a new Date object by combining the campaignDate with the parsed time
+    const DateTime = new Date(Date2);
+    DateTime.setHours(hours);
+    DateTime.setMinutes(minutes);
+    DateTime.setSeconds(seconds);
+
+    // Format campaignDateTime as "YYYY-MM-DD HH:mm:ss"
+    const formattedDateTime = `${DateTime.getFullYear()}-${String(
+      DateTime.getMonth() + 1
+    ).padStart(2, "0")}-${String(DateTime.getDate()).padStart(2, "0")} ${String(
+      DateTime.getHours()
+    ).padStart(2, "0")}:${String(DateTime.getMinutes()).padStart(
+      2,
+      "0"
+    )}:${String(DateTime.getSeconds()).padStart(2, "0")}`;
+
+    return formattedDateTime;
+  }
+
   const handleAddHashtag = () => {
     let captions = caption;
     captions += hashtags.join(" ");
@@ -98,31 +137,49 @@ const Create = () => {
 
   const handleFinish = async () => {
     setLoading(true);
-    console.log(process.env.NEXT_PUBLIC_PINATA_JWT);
     try {
-      const upload = await pinata.upload.file(file);
+      let upload = {
+        IpfsHash: "string",
+      };
+      if (selectedPlatform == "instagram") {
+        upload = await pinata.upload.file(file);
+      } else if (selectedPlatform == "twitter" && !retweet && tweetMedia) {
+        upload = await pinata.upload.file(tweetMedia);
+      } else {
+        upload.IpfsHash = "null";
+      }
       console.log(upload);
+      console.log(upload.IpfsHash);
       if (upload.IpfsHash) {
         const imageUrl = `${process.env.NEXT_PUBLIC_PINATA_ENDPOINT}/ipfs/${upload.IpfsHash}`;
         const currentDateTime = new Date();
-
+        const campaignDateTime = formatDateTime(
+          campaignDate ? campaignDate : currentDateTime,
+          campaignTime ? campaignTime : "00:00:00"
+        );
+        const payoutDateTime = formatDateTime(
+          payoutDate ? payoutDate : currentDateTime,
+          payoutTime ? payoutTime : "00:00:00"
+        );
+        console.log(campaignDate);
+        console.log(campaignTime);
         // Prepare data for the second API call
         const postData = {
-          media_url: imageUrl,
           campaign_name: campaignName,
           company_name: "Aptos",
           campaign_description: description,
-          start_time: currentDateTime ? formatDate(currentDateTime) : "",
-          caption: caption,
-          end_time: campaignDate ? formatDate(campaignDate) : "",
-          payout_time: payoutDate ? formatDate(payoutDate) : "",
+          start_time: formatDateTime(
+            currentDateTime,
+            currentDateTime.toTimeString()
+          ),
+          end_time: campaignDateTime,
+          payout_time: payoutDateTime,
           prize_pool: prizePool,
+          post: "yes",
           likes: likes ? "yes" : "no",
           minimum_likes: likesCount,
           followers: followers ? "yes" : "no",
-          post: "yes",
           minimum_followers: followersCount,
-          media_type: file.type.includes("video") ? "video" : "image",
         };
 
         // Define the request options for the second API call
@@ -143,13 +200,76 @@ const Create = () => {
         const postResult = await postResponse.json(); // Parse the response as JSON
         console.log(postResult);
         if (!postResult.error) {
-          toast({
-            color: "80.9 88.5% 79.6%",
-            description: "Campaign created successfully!",
-          });
+          const campaignId = postResult.data;
+          // Prepare data for the third API call
+          let postMediaData: {
+            campaign_id: any;
+            platform: string;
+            media_type?: string;
+            media_url?: string;
+            caption?: string;
+            tweet?: boolean;
+            tweet_text?: string;
+            tweet_media_url?: string;
+            retweet?: boolean;
+            retweet_url?: string;
+            quote_tweet?: boolean;
+            quote_tweet_url?: string;
+          } = {
+            campaign_id: campaignId,
+            platform: selectedPlatform,
+          };
+          if (selectedPlatform == "instagram") {
+            postMediaData.media_type = file.type.includes("video")
+              ? "video"
+              : "image";
+            postMediaData.media_url = imageUrl;
+            postMediaData.caption = caption;
+          } else {
+            if (retweet) {
+              postMediaData.retweet = retweet;
+              postMediaData.retweet_url = retweetUrl;
+              postMediaData.quote_tweet = quoteTweet;
+            } else {
+              postMediaData.tweet = true;
+              postMediaData.tweet_text = twitterText;
+              if (tweetMedia) {
+                postMediaData.tweet_media_url = imageUrl;
+              }
+            }
+          }
+
+          const postOptions2: RequestInit = {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(postMediaData),
+            redirect: "follow",
+          };
+
+          const taskResponse = await fetch(
+            "http://localhost:5000/task",
+            postOptions2
+          );
+          const taskResult = await taskResponse.json(); // Parse the response as JSON
+          console.log(taskResult);
+
+          if (!taskResult.error) {
+            toast({
+              description: "Campaign created successfully!",
+            });
+
+            setLoading(false);
+            router.push("/campaignDetails/" + campaignId);
+            console.log("Campaign created successfully!");
+          } else {
+            toast({
+              variant: "destructive",
+              description: "Error while adding task",
+            });
+          }
           setLoading(false);
-          router.push("/campaignDetails/" + postResult.data);
-          console.log("Campaign created successfully!");
         } else {
           toast({
             variant: "destructive",
@@ -170,60 +290,6 @@ const Create = () => {
       });
       setLoading(false);
     }
-
-    // Check if the response is successful and contains the data
-    // if (!res.error && res.data) {
-    //   const imageUrl = result.data;
-    //   const currentDateTime = new Date();
-
-    //   // Prepare data for the second API call
-    //   const postData = {
-    //     media_url: imageUrl,
-    //     campaign_name: campaignName,
-    //     company_name: "Aptos",
-    //     campaign_description: description,
-    //     start_time: currentDateTime ? formatDate(currentDateTime) : "",
-    //     caption: caption,
-    //     end_time: campaignDate ? formatDate(campaignDate) : "",
-    //     payout_time: payoutDate ? formatDate(payoutDate) : "",
-    //     prize_pool: prizePool,
-    //     likes: likes ? "yes" : "no",
-    //     minimum_likes: likesCount,
-    //     followers: followers ? "yes" : "no",
-    //     post: "yes",
-    //     minimum_followers: followersCount,
-    //     media_type: file.type.includes("video") ? "video" : "image",
-    //   };
-
-    //   // Define the request options for the second API call
-    //   const postOptions: RequestInit = {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(postData),
-    //     redirect: "follow",
-    //   };
-
-    //   // Perform the second fetch request
-    //   const postResponse = await fetch(
-    //     "http://localhost:5000/campaign",
-    //     postOptions
-    //   );
-    //   const postResult = await postResponse.json(); // Parse the response as JSON
-    //   console.log(postResult);
-    //   if (!postResult.error) {
-    //     toast({
-    //       color: "80.9 88.5% 79.6%",
-    //       description: "Campaign created successfully!",
-    //     });
-    //     setLoading(false);
-    //     router.push("/campaignDetails/" + postResult.data);
-    //     console.log("Campaign created successfully!");
-    //   }
-    // } else {
-    //   console.error("Failed to get image URL:", result);
-    // }
   };
 
   const dialogContent = [
@@ -281,6 +347,64 @@ const Create = () => {
     },
     {
       title: (
+        <h1 className="text-[#273339] text-[36px] font-[800]">
+          Select the Platform
+        </h1>
+      ),
+      description: "Select the platform you want to create a campaign for.",
+      content: (
+        <div className="grid grid-cols-2 gap-6 my-[40px]">
+          <div
+            className={`flex flex-col cursor-pointer items-center justify-center gap-y-[10px] h-[140px] bg-white border border-gray-200 rounded-lg hover:shadow-md ${
+              selectedPlatform == "twitter" && "shadow-md"
+            }`}
+            onClick={() => setSelectedPlatform("twitter")}
+          >
+            <img
+              src="/assets/images/twitter1.png"
+              alt="Twitter"
+              className="h-[45px] rounded-[10px]"
+            />
+            <span className="font-[500] text-gray-800">Twitter</span>
+          </div>
+          <div
+            className={`flex flex-col items-center cursor-pointer justify-center gap-y-[10px] h-[140px] bg-white border border-gray-200 rounded-lg hover:shadow-md ${
+              selectedPlatform == "instagram" && "shadow-md"
+            }`}
+            onClick={() => setSelectedPlatform("instagram")}
+          >
+            <img
+              src="/assets/images/instagram1.png"
+              alt="Instagram"
+              className="h-[45px] rounded-[10px]"
+            />
+            <span className="font-[500] text-gray-800">Instagram</span>
+          </div>
+        </div>
+      ),
+      footer: (
+        <Button
+          type="submit"
+          className="px-[40px]"
+          onClick={() => {
+            if (selectedPlatform == "instagram") {
+              setSteps(2);
+            } else if (selectedPlatform == "twitter") {
+              setSteps(4);
+            } else {
+              toast({
+                variant: "destructive",
+                description: "Select Platform before continuing.",
+              });
+            }
+          }}
+        >
+          Next
+        </Button>
+      ),
+    },
+    {
+      title: (
         <h1 className="text-[#273339] text-[36px] font-[800]">Add your post</h1>
       ),
       description:
@@ -330,7 +454,7 @@ const Create = () => {
           <Button
             type="submit"
             className="px-[40px] bg-white text-black border-[1px] border-gray-500 text-[16px] font-[400] hover:bg-gray-900 hover:text-white"
-            onClick={() => setSteps(0)}
+            onClick={() => setSteps(1)}
           >
             Back
           </Button>
@@ -339,7 +463,7 @@ const Create = () => {
             className="px-[40px] bg-blue-500 text-[16px] font-[400] hover:bg-blue-600"
             onClick={() => {
               if (file) {
-                setSteps(2);
+                setSteps(3);
               } else {
                 toast({
                   variant: "destructive",
@@ -446,6 +570,216 @@ const Create = () => {
           <Button
             type="submit"
             className="px-[40px] bg-white text-black border-[1px] border-gray-500 text-[16px] font-[400] hover:bg-gray-600 hover:text-white"
+            onClick={() => setSteps(2)}
+          >
+            Back
+          </Button>
+          <Button
+            type="submit"
+            className="px-[40px] bg-blue-500 text-[16px] font-[400] hover:bg-blue-600"
+            onClick={() => setSteps(5)}
+          >
+            Next
+          </Button>
+        </div>
+      ),
+    },
+    {
+      title: (
+        <h1 className="text-[#273339] text-[36px] font-[800]">Add post</h1>
+      ),
+      description:
+        "Create article for the tweet. Boost engagement with strategic hashtags!",
+      content: (
+        <div className="flex flex-col gap-y-[25px]">
+          <Tabs
+            defaultValue={retweet ? "retweet" : "tweet"}
+            onValueChange={(value) => {
+              if (value === "retweet") {
+                setRetweet(true);
+              } else {
+                setRetweet(false);
+              }
+              console.log(retweet);
+            }}
+          >
+            <TabsList>
+              <TabsTrigger value="tweet">
+                <div className="flex items-center gap-x-[5px] text-black">
+                  Tweet
+                  <svg className="h-4" viewBox="0 0 24 24" aria-hidden="true">
+                    <g>
+                      <path d="M23 3c-6.62-.1-10.38 2.421-13.05 6.03C7.29 12.61 6 17.331 6 22h2c0-1.007.07-2.012.19-3H12c4.1 0 7.48-3.082 7.94-7.054C22.79 10.147 23.17 6.359 23 3zm-7 8h-1.5v2H16c.63-.016 1.2-.08 1.72-.188C16.95 15.24 14.68 17 12 17H8.55c.57-2.512 1.57-4.851 3-6.78 2.16-2.912 5.29-4.911 9.45-5.187C20.95 8.079 19.9 11 16 11zM4 9V6H1V4h3V1h2v3h3v2H6v3H4z"></path>
+                    </g>
+                  </svg>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger value="retweet">
+                <div className="flex items-center gap-x-[5px]">
+                  ReTweet
+                  <svg viewBox="0 0 24 24" className="h-4">
+                    <g>
+                      <path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"></path>
+                    </g>
+                  </svg>
+                </div>
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="tweet">
+              <div className="flex flex-col pt-[10px] gap-y-[10px]">
+                <div className="flex gap-x-[5px]">
+                  <img
+                    className="w-[30px] h-[30px]"
+                    src="/assets/images/twitter.png"
+                    alt="twitter"
+                  />
+                  <Textarea
+                    className="focus-visible:ring-0 border-0 focus-visible:ring-transparent dark:focus-visible:ring-transparent"
+                    value={twitterText}
+                    placeholder="What is happening?!"
+                    onChange={(e) => setTwitterText(e.target.value)}
+                  />
+                </div>
+                {tweetMedia && (
+                  <div className="flex flex-col items-start">
+                    <img
+                      className="border-[1px] rounded-lg shadow-sm"
+                      src={URL.createObjectURL(tweetMedia)}
+                    />
+                  </div>
+                )}
+
+                <div className="p-[10px] border-t flex justify-between">
+                  <div className="flex gap-x-[10px]">
+                    <div>
+                      <input
+                        type="file"
+                        ref={fileInputTwitterImage}
+                        style={{ display: "none" }}
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files) {
+                            setTweetMedia(e.target.files[0]);
+                            console.log(e.target.files[0]);
+                          }
+                        }}
+                      />
+                      <div
+                        className="cursor-pointer"
+                        onClick={() => {
+                          fileInputTwitterImage.current?.click();
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1"
+                          stroke="currentColor"
+                          className="w-6 h-6 cursor-pointer"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => {
+                        fileInputTwitterImage.current?.click();
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1"
+                        stroke="currentColor"
+                        className="w-6 h-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12.75 8.25v7.5m6-7.5h-3V12m0 0v3.75m0-3.75H18M9.75 9.348c-1.03-1.464-2.698-1.464-3.728 0-1.03 1.465-1.03 3.84 0 5.304 1.03 1.464 2.699 1.464 3.728 0V12h-1.5M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <input
+                        type="file"
+                        ref={fileInputTwitterVideo}
+                        style={{ display: "none" }}
+                        accept="video/*"
+                        onChange={(e) => {
+                          if (e.target.files) {
+                            setTweetMedia(e.target.files[0]);
+                            console.log(e.target.files[0]);
+                          }
+                        }}
+                      />
+                      <div
+                        className="cursor-pointer"
+                        onClick={() => {
+                          fileInputTwitterVideo.current?.click();
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className="w-6 h-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    className="border border-blue-400 bg-blue-100 rounded-full px-[10px]"
+                    // onClick={generateTwitterHastags}
+                  >
+                    Generate Hashtags
+                  </button>
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="retweet">
+              <div className="flex flex-col gap-y-[20px] pt-[20px]">
+                <Input
+                  className="focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:border-0 dark:focus-visible:ring-transparent"
+                  placeholder="Paste your tweet url here (https://x.com/)"
+                  value={retweetUrl}
+                  onChange={(e) => setRetweetUrl(e.target.value)}
+                />
+                <div className="flex items-center space-x-4">
+                  <Switch
+                    id="quote_tweet"
+                    onCheckedChange={(e: boolean) => {
+                      setQuoteTweet(e);
+                    }}
+                  />
+                  <Label htmlFor="quote_tweet">Quote Tweet Required?</Label>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      ),
+      footer: (
+        <div className="flex justify-between w-full gap-x-[10px] mt-[30px]">
+          <Button
+            type="submit"
+            className="px-[40px] bg-white text-black border-[1px] border-gray-500 text-[16px] font-[400] hover:bg-gray-900 hover:text-white"
             onClick={() => setSteps(1)}
           >
             Back
@@ -453,7 +787,23 @@ const Create = () => {
           <Button
             type="submit"
             className="px-[40px] bg-blue-500 text-[16px] font-[400] hover:bg-blue-600"
-            onClick={() => setSteps(3)}
+            onClick={() => {
+              if (retweet && retweetUrl.length > 0) {
+                setSteps(5);
+              } else if (retweet) {
+                toast({
+                  variant: "destructive",
+                  description: "Retweet URL cannot be empty",
+                });
+              } else if (twitterText.length > 0 || tweetMedia) {
+                setSteps(5);
+              } else {
+                toast({
+                  variant: "destructive",
+                  description: "Tweet cannot be empty",
+                });
+              }
+            }}
           >
             Next
           </Button>
@@ -515,6 +865,12 @@ const Create = () => {
                 </div>
               </PopoverContent>
             </Popover>
+            <CTimePicker
+              className="w-[280px] text-[12px]"
+              color="blue"
+              size="sm"
+              onTimeChange={(e) => (e ? setCampaignTime(e) : "")}
+            />
           </div>
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="endTime" className="text-[#5c686d] text-[12px]">
@@ -562,6 +918,12 @@ const Create = () => {
                 </div>
               </PopoverContent>
             </Popover>
+            <CTimePicker
+              className="w-[280px] text-[12px]"
+              color="blue"
+              size="sm"
+              onTimeChange={(e) => setPayoutTime(e ?? "")}
+            />
           </div>
           <div className="flex flex-col gap-y-2">
             <Label htmlFor="description" className="text-[#5c686d] text-[12px]">
@@ -588,7 +950,10 @@ const Create = () => {
           <Button
             type="submit"
             className="px-[40px] bg-white text-black border-[1px] border-gray-500 text-[16px] font-[400] hover:bg-gray-900 hover:text-white"
-            onClick={() => setSteps(2)}
+            onClick={() => {
+              if (selectedPlatform == "instagram") setSteps(3);
+              else if (selectedPlatform == "twitter") setSteps(4);
+            }}
           >
             Back
           </Button>
@@ -598,7 +963,7 @@ const Create = () => {
             onClick={() => {
               if (campaignDate && payoutDate && campaignDate < payoutDate) {
                 if (prizePool && prizePool > 0) {
-                  setSteps(4);
+                  setSteps(6);
                 } else {
                   toast({
                     variant: "destructive",
@@ -685,7 +1050,7 @@ const Create = () => {
           <Button
             type="submit"
             className="px-[40px] bg-white text-black border-[1px] border-gray-500 text-[16px] font-[400] hover:bg-gray-900 hover:text-white"
-            onClick={() => setSteps(3)}
+            onClick={() => setSteps(5)}
           >
             Back
           </Button>
@@ -726,7 +1091,11 @@ const Create = () => {
             </DialogTrigger>
           </div>
         </div>
-        <DialogContent className="max-w-[576px] w-fit max-h-[90vh] scrollbar-hide overflow-y-auto p-[64px] py-[48px]">
+        <DialogContent
+          className="max-w-[576px] w-fit max-h-[90vh] scrollbar-hide overflow-y-auto p-[64px] py-[48px]"
+          onInteractOutside={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>{dialogContent[steps].title}</DialogTitle>
             <DialogDescription>

@@ -120,7 +120,7 @@ const Participants = ({ params }: { params: { campaignId: string } }) => {
 
     return (
         <div className="flex flex-col w-[100%] justify-center items-center">
-            <h2>Campaign Participants</h2>
+            <span>Campaign Participants</span>
             <div className="w-[70%] mt-[50px]">
             <TableDemo />
             </div>
