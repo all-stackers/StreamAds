@@ -138,6 +138,15 @@ def callback():
         oauth_response = oauth.fetch_access_token(
             ACCESS_TOKEN_URL, verifier=oauth_verifier
         )
+        response = User.update_user_by_oauth(
+            oauth_token=oauth_token,
+            args={
+                "oauth_token": oauth_response["oauth_token"],
+                "oauth_token_secret": oauth_response["oauth_token_secret"],
+            },
+        )
+        if response["error"]:
+            return f"Error updating user: {response['message']}"
         print(oauth_response)
     except ValueError as e:
         return f"Error fetching access token: {str(e)}"
@@ -210,64 +219,144 @@ def build_auth_header(oauth_params):
     )
 
 
-@app.route("/tweet")
+# import logging
+
+# @app.route("/tweet")
+# def tweet():
+#     access_token = os.getenv("APTOS_ACCESS_TOKEN")
+#     access_token_secret = os.getenv("APTOS_ACCESS_TOKEN_SECRET")
+
+#     if not access_token or not access_token_secret:
+#         return "Missing OAuth tokens in environment variables", 500
+
+#     logging.info("APTOS_ACCESS_TOKEN: %s", access_token)
+#     logging.info("APTOS_ACCESS_TOKEN_SECRET: %s", access_token_secret)
+#     logging.info("APTOS_CONSUMER_KEY: %s", APTOS_CONSUMER_KEY)
+#     logging.info("APTOS_CONSUMER_SECRET: %s", APTOS_CONSUMER_SECRET)
+
+#     oauth = OAuth1Session(
+#         client_key=APTOS_CONSUMER_KEY,
+#         client_secret=APTOS_CONSUMER_SECRET,
+#         resource_owner_key=access_token,
+#         resource_owner_secret=access_token_secret,
+#     )
+
+#     payload = {"text": "Hello Jhenil Here"}
+#     response = oauth.post("https://api.twitter.com/2/tweets", json=payload)
+
+#     logging.info("Request URL: %s", response.request.url)
+#     logging.info("Request Headers: %s", response.request.headers)
+#     logging.info("Request Body: %s", response.request.body)
+    
+#     if response.status_code != 201:
+#         logging.error("Request returned an error: %s %s", response.status_code, response.text)
+#         raise Exception(
+#             "Request returned an error: {} {}".format(response.status_code, response.text)
+#         )
+
+#     json_response = response.json()
+#     logging.info("Response JSON: %s", json.dumps(json_response, indent=4, sort_keys=True))
+
+#     return "Tweet posted successfully", 201
+
+
+
+# BEARER_TOKEN = os.getenv("APTOS_BEARER_TOKEN")
+# CONSUMER_KEY = os.getenv("APTOS_CONSUMER_KEY")
+# CONSUMER_SECRET = os.getenv("APTOS_CONSUMER_SECRET")
+# ACCESS_TOKEN = os.getenv("APTOS_ACCESS_TOKEN")
+# ACCESS_TOKEN_SECRET = os.getenv("APTOS_ACCESS_TOKEN_SECRET")
+
+# if not all([BEARER_TOKEN, CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET]):
+#     raise ValueError("One or more authentication credentials are missing")
+
+# # Create a Tweepy client for OAuth 1.0a user context actions
+# client = tweepy.Client(
+#     bearer_token=BEARER_TOKEN,
+#     consumer_key=CONSUMER_KEY,
+#     consumer_secret=CONSUMER_SECRET,
+#     access_token=ACCESS_TOKEN,
+#     access_token_secret=ACCESS_TOKEN_SECRET,
+# )
+
+@app.route('/tweet', methods=["POST"])
 def tweet():
-    payload = {"text": "Hello Deep Here"}
-    oauth = OAuth1Session(
-        APTOS_CONSUMER_KEY,
-        client_secret=APTOS_CONSUMER_SECRET,
-        resource_owner_key=os.getenv("access_token"),
-        resource_owner_secret=os.getenv("access_token_secret"),
-    )
+    data=request.json
+    tweet_text=data.get("tweet_text","")
+    wallet_address = data.get("wallet_address", "")
+    response = User.get_user_by_wallet_address(wallet_address)
+    user = response.get("data")
+    if user:
+        print(user["oauth_token"])
+        print(user["oauth_token_secret"])
 
-    # Making the request
-    response = oauth.post(
-        "https://api.twitter.com/2/tweets",
-        json=payload,
-    )
-
-    if response.status_code != 201:
-        error_message = "Request returned an error: {} {}".format(
-            response.status_code, response.text
+        payload = {"text":tweet_text}
+        oauth = OAuth1Session(
+            APTOS_CONSUMER_KEY,
+            client_secret=APTOS_CONSUMER_SECRET,
+            resource_owner_key=user["oauth_token"],
+            resource_owner_secret=user["oauth_token_secret"],
         )
-        return jsonify({"error": error_message}), response.status_code
-
-    # Saving the response as JSON
-    json_response = response.json()
-    print(json.dumps(json_response, indent=4, sort_keys=True))
-
-    # Return the tweet ID or a success message
-    tweet_id = json_response.get("data", {}).get("id")
-    if tweet_id:
-        return (
-            jsonify({"message": "Tweet posted successfully!", "tweet_id": tweet_id}),
-            201,
+        # Making the request
+        response = oauth.post(
+            "https://api.twitter.com/2/tweets",
+            json=payload,
         )
-    else:
-        return jsonify({"error": "Tweet posting failed, no tweet ID in response"}), 500
+        if response.status_code != 201:
+            error_message = "Request returned an error: {} {}".format(response.status_code, response.text)
+            return jsonify({"error": error_message}), response.status_code
+        # Saving the response as JSON
+        json_response = response.json()
+        print(json.dumps(json_response, indent=4, sort_keys=True))
+        
+        # Return the tweet ID or a success message
+        tweet_id = json_response.get('data', {}).get('id')
+        if tweet_id:
+            return jsonify({"message": "Tweet posted successfully!", "tweet_id": tweet_id}), 201
+        else:
+            return jsonify({"error": "Tweet posting failed, no tweet ID in response"}), 50
 
 
-@app.route("/quote-tweet")
+@app.route("/quote-tweet", methods=["POST"])
 def quotetweet():
-    quote_tweet_id_here = "1828775378380324889"  # The tweet ID you want to quote
-    client = tweepy.Client(
-        bearer_token=os.getenv("bearer_token"),
-        CONSUMER_KEY=APTOS_CONSUMER_KEY,
-        CONSUMER_SECRET=APTOS_CONSUMER_SECRET,
-        access_token=session.get("access_token"),
-        access_token_secret=session.get("access_token_secret"),
-    )
-    print(client)
-    try:
-        quote_text = "Get a Look! 🚀"
-        quote_tweet_response = client.create_tweet(
-            text=quote_text, quote_tweet_id=quote_tweet_id_here
-        )
-        # Post a tweet using the API v2
-        response = quote_tweet_response
-        return f"Tweet posted successfully! Tweet ID: {response.data['id']}"
-    except tweepy.TweepyException as e:
-        return f"Failed to post tweet. Error: {e}"
+    data = request.json
+    quote_tweet_id = data.get("quote_tweet_id", "1828775378380324889")
+    quote_text = data.get("quote_text", "")
+    wallet_address = data.get("wallet_address", "")
+    response = User.get_user_by_wallet_address(wallet_address)
+    user = response.get("data")
+    if user:
+        try:
+            client = tweepy.Client(
+                bearer_token=os.getenv("APTOS_BEARER_TOKEN"),
+                consumer_key=APTOS_CONSUMER_KEY,
+                consumer_secret=APTOS_CONSUMER_SECRET,
+                access_token=user["oauth_token"],
+                access_token_secret=user["oauth_token_secret"],
+            )
+
+            # Create a tweet using API v2
+            quote_tweet_response = client.create_tweet(
+                text=quote_text, quote_tweet_id=quote_tweet_id
+            )
+
+            return {
+                "error": False,
+                "msg": "Tweet posted successfully!",
+                "tweet_id": quote_tweet_response.data["id"],
+            }, 200  # HTTP status code 200 for success
+
+        except tweepy.TweepyException as e:
+            return {
+                "error": True,
+                "msg": f"Failed to post tweet. Error: {str(e)}",
+            }, 403  # HTTP status code 403 for a forbidden error
+
+    else:
+        return {
+            "error": True,
+            "msg": "User not found",
+        }, 404  # HTTP status code 404 for user not found
 
 
 def get_tweet_details(tweet_id, auth):
@@ -344,54 +433,66 @@ MEDIA_UPLOAD_URL = "https://upload.twitter.com/1.1/media/upload.json"
 TWEET_CREATE_URL = "https://api.twitter.com/2/tweets"
 
 
-@app.route("/tweet_with_media")
+@app.route("/tweet_with_media", methods=["POST"])
 def tweet_with_media():
-    media_url = "https://apricot-big-hookworm-563.mypinata.cloud/ipfs/bafkreihgb32abtzuep7vagiiusc3nufuxy4h6vaopvhehu42lsuhfztat4"
-    tweet_text = "Here is a tweet with media!"
-
+    data =request.json
+    media_url = data.get("media_url", "")
+    tweet_text = data.get("tweet_text", "")
+    wallet_address = data.get("wallet_address", "")
+    response = User.get_user_by_wallet_address(wallet_address)
+    user = response.get("data")
+    if user:
+        print(user["oauth_token"])
+        print(user["oauth_token_secret"])
+        oauth = OAuth1Session(
+            APTOS_CONSUMER_KEY,
+            client_secret=APTOS_CONSUMER_SECRET,
+            resource_owner_key=user["oauth_token"],
+            resource_owner_secret=user["oauth_token_secret"],
+        )
     # Create OAuth1 session
-    oauth = OAuth1Session(
-        os.environ.get("APTOS_CONSUMER_KEY"),
-        client_secret=os.environ.get("APTOS_CONSUMER_SECRET"),
-        resource_owner_key=session.get("access_token"),
-        resource_owner_secret=session.get("access_token_secret"),
-    )
+    # oauth = OAuth1Session(
+    #     os.environ.get("APTOS_CONSUMER_KEY"),
+    #     client_secret=os.environ.get("APTOS_CONSUMER_SECRET"),
+    #     resource_owner_key=session.get("access_token"),
+    #     resource_owner_secret=session.get("access_token_secret"),
+    # )
 
-    try:
-        # Download the image
-        image_response = requests.get(media_url)
-        image_response.raise_for_status()
-        image_content = image_response.content
+        try:
+            # Download the image
+            image_response = requests.get(media_url)
+            image_response.raise_for_status()
+            image_content = image_response.content
 
-        # Upload media
-        files = {"media": image_content}
-        media_response = oauth.post(
-            MEDIA_UPLOAD_URL,
-            files=files,
-        )
-        media_response.raise_for_status()
-        media_id = media_response.json()["media_id_string"]
+            # Upload media
+            files = {"media": image_content}
+            media_response = oauth.post(
+                MEDIA_UPLOAD_URL,
+                files=files,
+            )
+            media_response.raise_for_status()
+            media_id = media_response.json()["media_id_string"]
 
-        # Post a tweet with the media
-        tweet_payload = {"text": tweet_text, "media": {"media_ids": [media_id]}}
-        tweet_response = oauth.post(TWEET_CREATE_URL, json=tweet_payload)
-        tweet_response.raise_for_status()
+            # Post a tweet with the media
+            tweet_payload = {"text": tweet_text, "media": {"media_ids": [media_id]}}
+            tweet_response = oauth.post(TWEET_CREATE_URL, json=tweet_payload)
+            tweet_response.raise_for_status()
 
-        # Extract tweet ID from response
-        tweet_data = tweet_response.json()["data"]
-        tweet_id = tweet_data["id"]
+            # Extract tweet ID from response
+            tweet_data = tweet_response.json()["data"]
+            tweet_id = tweet_data["id"]
 
-        return (
-            jsonify({"message": "Tweet posted successfully!", "tweet_id": tweet_id}),
-            201,
-        )
+            return (
+                jsonify({"message": "Tweet posted successfully!", "tweet_id": tweet_id}),
+                201,
+            )
 
-    except requests.exceptions.RequestException as e:
-        error_message = f"An error occurred: {str(e)}"
-        if hasattr(e, "response") and e.response is not None:
-            error_message += f"\nStatus code: {e.response.status_code}"
-            error_message += f"\nResponse text: {e.response.text}"
-        return jsonify({"error": error_message}), 500
+        except requests.exceptions.RequestException as e:
+            error_message = f"An error occurred: {str(e)}"
+            if hasattr(e, "response") and e.response is not None:
+                error_message += f"\nStatus code: {e.response.status_code}"
+                error_message += f"\nResponse text: {e.response.text}"
+            return jsonify({"error": error_message}), 500
 
 
 @app.route("/retweet")
