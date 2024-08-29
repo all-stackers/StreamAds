@@ -1,0 +1,15 @@
+[package]
+name = "stream"
+version = "1.0.0"
+authors = []
+
+[addresses]
+kenil = "0xe4b14261dcfdc02456b31d0a216a1de2a706efcabc817efdd6f3f42f0480db79"
+[dev-addresses]
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "mainnet"
+subdir = "aptos-move/framework/aptos-framework"
+
+[dev-dependencies]
