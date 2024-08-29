@@ -138,6 +138,15 @@ def callback():
         oauth_response = oauth.fetch_access_token(
             ACCESS_TOKEN_URL, verifier=oauth_verifier
         )
+        response = User.update_user_by_oauth(
+            oauth_token=oauth_token,
+            args={
+                "oauth_token": oauth_response["oauth_token"],
+                "oauth_token_secret": oauth_response["oauth_token_secret"],
+            },
+        )
+        if response["error"]:
+            return f"Error updating user: {response['message']}"
         print(oauth_response)
     except ValueError as e:
         return f"Error fetching access token: {str(e)}"
@@ -216,8 +225,8 @@ def tweet():
     oauth = OAuth1Session(
         APTOS_CONSUMER_KEY,
         client_secret=APTOS_CONSUMER_SECRET,
-        resource_owner_key=os.getenv("access_token"),
-        resource_owner_secret=os.getenv("access_token_secret"),
+        resource_owner_key="1426573904865202176-GpG6B5naxz4KwKCZ0lFwGHbZfmPDMm",
+        resource_owner_secret="izLgqrA07AbI4rUDxl9mKoVcBTyORmY5sTDmn4Yp9QHnt",
     )
 
     # Making the request
@@ -247,27 +256,42 @@ def tweet():
         return jsonify({"error": "Tweet posting failed, no tweet ID in response"}), 500
 
 
-@app.route("/quote-tweet")
+import tweepy
+
+
+@app.route("/quote-tweet", methods=["POST"])
 def quotetweet():
-    quote_tweet_id_here = "1828775378380324889"  # The tweet ID you want to quote
-    client = tweepy.Client(
-        bearer_token=os.getenv("bearer_token"),
-        CONSUMER_KEY=APTOS_CONSUMER_KEY,
-        CONSUMER_SECRET=APTOS_CONSUMER_SECRET,
-        access_token=session.get("access_token"),
-        access_token_secret=session.get("access_token_secret"),
-    )
-    print(client)
-    try:
-        quote_text = "Get a Look! 🚀"
-        quote_tweet_response = client.create_tweet(
-            text=quote_text, quote_tweet_id=quote_tweet_id_here
-        )
-        # Post a tweet using the API v2
-        response = quote_tweet_response
-        return f"Tweet posted successfully! Tweet ID: {response.data['id']}"
-    except tweepy.TweepyException as e:
-        return f"Failed to post tweet. Error: {e}"
+    data = request.json
+    quote_tweet_id = data.get("quote_tweet_id", "1828775378380324889")
+    quote_text = data.get("quote_text", "")
+    wallet_address = data.get("wallet_address", "")
+    response = User.get_user_by_wallet_address(wallet_address)
+    user = response.get("data")
+    if user:
+        print(user["oauth_token"])
+        print(user["oauth_token_secret"])
+        print("This is my consumer key:", APTOS_CONSUMER_KEY)
+        print("This is my consumer secret:", APTOS_CONSUMER_SECRET)
+
+        try:
+            client = tweepy.Client(
+                bearer_token=os.getenv("APTOS_BEARER_TOKEN"),
+                consumer_key=APTOS_CONSUMER_KEY,
+                consumer_secret=APTOS_CONSUMER_SECRET,
+                access_token=user["oauth_token"],
+                access_token_secret=user["oauth_token_secret"],
+            )
+
+            # Create a tweet using API v2
+            quote_tweet_response = client.create_tweet(
+                text=quote_text, quote_tweet_id=quote_tweet_id
+            )
+
+            return f"Tweet posted successfully! Tweet ID: {quote_tweet_response.data['id']}"
+        except tweepy.TweepyException as e:
+            return f"Failed to post tweet. Error: {e}"
+    else:
+        return "User not found"
 
 
 def get_tweet_details(tweet_id, auth):
