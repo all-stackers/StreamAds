@@ -311,11 +311,11 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
       wallet_address: "0x8393894894",
     };
 
-    const requestOptions = {
+    const requestOptions: RequestInit = {
       method: "POST",
       headers: myHeaders,
       body: JSON.stringify(postData),
-      redirect: "follow" as RequestRedirect,
+      redirect: "follow",
     };
 
     try {
@@ -324,13 +324,12 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
         requestOptions
       );
       const result = await response.json();
-      console.log(result);
 
       if (!result.error) {
         setLoading(false);
         setSteps(1);
         toast({
-          description: result.msg,
+          description: result.msg + ` Tweet ID: ${result.tweet_id}`,
         });
       } else {
         setLoading(false);
@@ -349,7 +348,52 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
     }
   };
 
-  
+  const handleTwitterPost = async () => {
+    setLoading(true);
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const postData = {
+      tweet_text: campaignDetails?.task?.tweet_text,
+      wallet_address: "0x8393894894",
+    };
+
+    const requestOptions: RequestInit = {
+      method: "POST",
+      headers: myHeaders,
+      body: JSON.stringify(postData),
+      redirect: "follow",
+    };
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/tweet",
+        requestOptions
+      );
+      const result = await response.json();
+
+      if (!result.error) {
+        setLoading(false);
+        setSteps(1);
+        toast({
+          description: result.msg + ` Tweet ID: ${result.tweet_id}`,
+        });
+      } else {
+        setLoading(false);
+        toast({
+          variant: "destructive",
+          description: result.msg,
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+      toast({
+        variant: "destructive",
+        description: "Error while posting on Twitter.",
+      });
+    }
+  };
 
   console.log(tweetHtml);
 
@@ -504,7 +548,15 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
               if (campaignDetails?.task?.platform == "instagram") {
                 handlePost();
               } else {
-                handleQuoteTwitterPost();
+                if (campaignDetails?.task?.retweet == false) {
+                  if (campaignDetails?.task?.tweet_media_url) {
+                    handleTwitterWithMediaPost();
+                  } else {
+                    handleTwitterPost();
+                  }
+                } else {
+                  handleQuoteTwitterPost();
+                }
               }
             }}
           >
@@ -663,50 +715,56 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
                 </CardFooter>
               </Card>
 
-              <div className="flex w-[40%] bg-gray-200 rounded-[10px] justify-center items-center">
-                {campaignDetails?.task?.platform == "instagram" ? (
-                  <>
-                    {campaignDetails?.task?.media_url && (
-                      <>
-                        {campaignDetails?.task?.media_type &&
-                        campaignDetails?.task?.media_type.includes("video") ? (
-                          <video
-                            className="h-[100%] rounded-[10px]"
-                            src={campaignDetails?.task?.media_url}
-                            autoPlay={true}
-                            muted={true}
-                            controls={true}
-                            loop={true}
-                          ></video>
-                        ) : (
-                          <img
-                            className="h-[100%]"
-                            src={campaignDetails?.task?.media_url}
-                            alt="Selected"
-                          ></img>
-                        )}
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {campaignDetails?.task?.retweet == false ? (
-                      <div className="flex flex-col min-h-full px-[15px] py-[10px] gap-y-[10px]">
-                        <div className="flex gap-x-[10px]">
-                          <img
-                            className="w-[30px] h-[30px]"
-                            src="/assets/images/twitter.png"
-                            alt="twitter"
-                          />
-                          <p className="text-black">
-                            {campaignDetails?.task?.tweet_text}
-                          </p>
-                        </div>
+              {campaignDetails?.task?.platform == "instagram" ? (
+                <div className="flex w-[40%] bg-gray-200 rounded-[10px] justify-center items-center">
+                  {campaignDetails?.task?.media_url && (
+                    <>
+                      {campaignDetails?.task?.media_type &&
+                      campaignDetails?.task?.media_type.includes("video") ? (
+                        <video
+                          className="h-[100%] rounded-[10px]"
+                          src={campaignDetails?.task?.media_url}
+                          autoPlay={true}
+                          muted={true}
+                          controls={true}
+                          loop={true}
+                        ></video>
+                      ) : (
+                        <img
+                          className="h-[100%]"
+                          src={campaignDetails?.task?.media_url}
+                          alt="Selected"
+                        ></img>
+                      )}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="flex w-[40%] border rounded-[10px] justify-center items-center">
+                  {campaignDetails?.task?.retweet == false ? (
+                    <div className="flex flex-col min-h-full px-[15px] py-[10px] gap-y-[10px]">
+                      <div className="flex gap-x-[10px]">
+                        <img
+                          className="w-[30px] h-[30px]"
+                          src="/assets/images/twitter.png"
+                          alt="twitter"
+                        />
+                        <p className="text-black">
+                          {campaignDetails?.task?.tweet_text}
+                        </p>
                       </div>
-                    ) : null}
-                  </>
-                )}
-              </div>
+                      {campaignDetails.task.tweet_media_url && (
+                        <div className="flex flex-col items-center px-[20px]">
+                          <img
+                            className="border-[1px] h-[200px] rounded-lg shadow-sm"
+                            src={campaignDetails.task.tweet_media_url}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md mt-5 mb-5">
@@ -719,7 +777,6 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
                   />
                   {campaignDetails?.prize_pool}.00
                 </h2>
-
 
                 <h3 className="text-[22px] text-[#8e989c] font-[400]">
                   Total Prize Pool
