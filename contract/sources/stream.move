@@ -1,24 +1,14 @@
 module kenil::stream {
-
-   
-    use std::string;
     use std::vector;
-    use std::option;
     use std::signer;
-
+    use aptos_framework::aptos_account;
 
     struct Campaign has copy, drop, store {
         creator: address,
-        media: string::String,
-        pool_amount: u64,
-        participants: vector<Participant>,
-        rewards_distributed: bool,
+        pool_amount: u64
     }
 
-    struct Participant has copy, drop,store {
-        participant_address: address,
-        instagram_post_id: string::String,
-    }
+  
 
     // Store campaigns with unique ids
      struct CampaignManager has key {
@@ -26,9 +16,8 @@ module kenil::stream {
         campaign_counter: u64,
     }
 
-    public fun create_campaign(
+    public entry fun create_campaign<CoinType>(
         sig: &signer,
-        media: string::String,
         pool_amount: u64,
     ) acquires CampaignManager{
         let manager = borrow_global_mut<CampaignManager>(signer::address_of(sig));
@@ -36,59 +25,45 @@ module kenil::stream {
 
         let new_campaign = Campaign {
             creator: signer::address_of(sig),
-            media,
-            pool_amount,
-            participants: vector::empty<Participant>(),
-            rewards_distributed: false,
+            pool_amount
         };
+        aptos_account::transfer_coins<CoinType>(sig, @kenil, pool_amount);
+        //    let coin = aptos_framework::coin::withdraw(sig, pool_amount);
+    // aptos_framework::coin::deposit(&manager.contract_address, coin);
 
         vector::push_back(&mut manager.campaigns, new_campaign);
         manager.campaign_counter = manager.campaign_counter + 1;
     }
 
-    public fun add_participant(
-        campaign_id: u64,
-        instagram_post_id: string::String,
-        sig: &signer,
-    ) acquires CampaignManager{
-        let manager = borrow_global_mut<CampaignManager>(signer::address_of(sig));
-        let campaign = vector::borrow_mut(&mut manager.campaigns, campaign_id);
-        let participant = Participant {
-            participant_address: signer::address_of(sig),
-            instagram_post_id,
-        };
-        vector::push_back(&mut campaign.participants, participant);
-    }
 
-    public fun distribute_rewards(campaign_id: u64, sig:&signer) acquires CampaignManager{
+    public entry fun distribute_rewards<CoinType>(sig:&signer, campaign_id: u64, userAddress : vector<address>, likes : vector<u64> ) acquires CampaignManager{
+        assert!(signer::address_of(sig) == @kenil, 1); // Only the owner can distribute rewards
+        let totalLikes:u64=0;
+       for(i in 0..vector::length(&likes)){
+          totalLikes = totalLikes + *vector::borrow(&likes, i)
+       };
+
+            
         let manager = borrow_global_mut<CampaignManager>(signer::address_of(sig));
         let campaign =  vector::borrow_mut(&mut manager.campaigns, campaign_id);
+        let totalAmount = campaign.pool_amount;
+        let rewardPerLike = totalAmount / totalLikes;
 
-        assert!(!campaign.rewards_distributed, 2); // Rewards already distributed
-
-        let num_participants = vector::length(&campaign.participants);
-        assert!(num_participants > 0, 3); // No participants to distribute rewards to
-
-        let reward_per_participant = campaign.pool_amount / num_participants;
-        for (i in 0..num_participants) {
-            let participant = vector::borrow(&campaign.participants,i);
-            
-            // Transfer reward logic is not directly supported in Move, assume external function for simplicity
-            // external_transfer(participant.participant_address, reward_per_participant);
-        };
-
-        campaign.rewards_distributed = true;
+        for(j in 0..vector::length(&userAddress)){
+            let userAddress = *vector::borrow(&userAddress, j);
+            let numberOfLikes = *vector::borrow(&likes, j);
+            let reward = numberOfLikes * rewardPerLike;
+            aptos_account::transfer_coins<CoinType>(sig, userAddress , reward);
+        }
+    
     }
 
-    public fun get_campaign(campaign_id: u64, sig:&signer): (address, string::String, u64, u64, bool) acquires CampaignManager {
+    public fun get_campaign(campaign_id: u64, sig:&signer): (address, u64) acquires CampaignManager {
         let manager = borrow_global_mut<CampaignManager>(signer::address_of(sig));
         let campaign = vector::borrow(&manager.campaigns, campaign_id);
         (
-            campaign.creator,
-            campaign.media,
-            campaign.pool_amount,
-            vector::length(&campaign.participants),
-            campaign.rewards_distributed,
+            campaign.creator,     
+            campaign.pool_amount
         )
     }
 
