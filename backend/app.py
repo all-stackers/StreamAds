@@ -22,7 +22,11 @@ from resources.company import Company
 from models.user import User
 
 # from resources.user import User
-from resources.campaign import Campaign, AddParticipantToCampaign, GetCampaignParticipants
+from resources.campaign import (
+    Campaign,
+    AddParticipantToCampaign,
+    GetCampaignParticipants,
+)
 from resources.task import Task
 from resources.scheduler import Scheduler
 
@@ -42,21 +46,21 @@ db.init_app(app)
 
 api.add_resource(Company, "/company")
 # api.add_resource(User, '/user')
-api.add_resource(Campaign, '/campaign')
-api.add_resource(AddParticipantToCampaign,'/campaign/add_participant')
+api.add_resource(Campaign, "/campaign")
+api.add_resource(AddParticipantToCampaign, "/campaign/add_participant")
 # api.add_resource(Posts,'/posts')
 # api.add_resource(Cloudinary, "/cloudinary")
 # api.add_resource(RetrieveLike, "/retrieve_likes")
 # api.add_resource(Hashtags, "/hashtag")
 # api.add_resource(Caption, "/caption")
-api.add_resource(Task, '/task')
-api.add_resource(Scheduler, '/schedule_funds_distribution')
-api.add_resource(GetCampaignParticipants, '/campaign/participants')
+api.add_resource(Task, "/task")
+api.add_resource(Scheduler, "/schedule_funds_distribution")
+api.add_resource(GetCampaignParticipants, "/campaign/participants")
 
 
-@app.route('/testcronjob')
+@app.route("/testcronjob")
 def testcronjob():
-   return "Cron job is working"
+    return "Cron job is working"
 
 
 app.secret_key = os.urandom(24)
@@ -143,7 +147,7 @@ def callback():
 
 @app.route("/success")
 def successLogin():
-    return redirect("http://localhost:3000/onboarding")
+    return redirect("http://localhost:3000/onboarding/user")
 
 
 @app.route("/twitter_status")
@@ -158,7 +162,7 @@ def twitter_status():
         return f"Error getting user: {response['message']}"
 
     user = response.get("data")
-    if user["oauth_token"] and user["oauth_token_secret"]:
+    if user and user["oauth_token"] and user["oauth_token_secret"]:
         print("User is authenticated")
         return {"status": True}
     else:

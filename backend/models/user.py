@@ -6,9 +6,6 @@ class User(db.Document):
     oauth_token = db.StringField(unique=True)
     oauth_token_secret = db.StringField()
     oauth_verifier = db.StringField()
-    instagram_username = db.StringField(unique=True)
-    instagram_access_token = db.StringField()
-    instagram_business_profile_id = db.StringField()
     participated_campaigns = db.ListField(db.DictField())
 
     @classmethod
@@ -43,7 +40,7 @@ class User(db.Document):
             return {"error": False, "data": user}
         except Exception as e:
             return {"error": True, "message": str(e)}
-    
+
     @classmethod
     def update_user_by_oauth(cls, oauth_token, args):
         try:
@@ -52,7 +49,6 @@ class User(db.Document):
             return {"error": False, "data": user.to_json()}
         except Exception as e:
             return {"error": True, "message": str(e)}
-
 
     @classmethod
     def add_participated_campaign(cls, wallet_address, campaign_id, instagram_post_id):
