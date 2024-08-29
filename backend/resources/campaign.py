@@ -9,21 +9,9 @@ from functions.get_twitter_post_insights import get_tweet_info
 import datetime
 from flask import request
 import json
-
-from aptos_sdk.account import Account
-from aptos_sdk.account_address import AccountAddress
-from aptos_sdk.aptos_cli_wrapper import AptosCLIWrapper
-from aptos_sdk.async_client import FaucetClient, ResourceNotFound, RestClient
-from aptos_sdk.bcs import Serializer
-from aptos_sdk.package_publisher import PackagePublisher
-from aptos_sdk.transactions import (
-    EntryFunction,
-    TransactionArgument,
-    TransactionPayload,
-)
 import requests
-import json
 
+# Initialize the scheduler
 scheduler = BackgroundScheduler()
 scheduler.start()
 
@@ -44,19 +32,23 @@ class Campaign(Resource):
         parser.add_argument("minimum_followers", type=int)
         args = parser.parse_args()
 
+        # Assign a campaign ID
         args["campaign_id"] = str(CampaignModel.objects().count() + 1).zfill(4)
 
+        # Add campaign to the database
         response = CampaignModel.add_campaign(args)
 
         if response["error"]:
             return {"error": True, "data": response["data"]}, 400
         
+        # Schedule the distribute_funds function
         payout_time = datetime.datetime.strptime(args["payout_time"], '%Y-%m-%d %H:%M:%S')
         job = scheduler.add_job(
             distribute_funds,
             trigger=DateTrigger(run_date=payout_time),
             args=[args["campaign_id"]]
         )
+        print("Job ID: ", job.id)
         
         return {"error": False, "data": args["campaign_id"]}, 201
     
@@ -148,49 +140,22 @@ class AddParticipantToCampaign(Resource):
         
         return {"error": False, "data": response["data"]}, 200
     
-# async def distribute_funds(self, campaign_id=None):
-#     eligible_participants = check_likes_count(campaign_id)
-#     print("eligible participants: ", eligible_participants)
-
-#     contract_address = "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53"
-
-#     message = [
-#         campaign_id,
-#         eligible_participants["eligible_participants"],
-#         eligible_participants["number_of_likes"]
-#     ]
-
-
-#     payload = EntryFunction.natural(
-#         f"{contract_address}::stream",
-#         "distribute_rewards",
-#         [],
-#         [TransactionArgument(message, Serializer.str)],
-#     )
-
-#     sender = {"address": "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53", "publicKey": "0xc7c64e5cbd60cf112b105c4b965539b210831e79bb09a1e4a89207bbe6f1d142"}
-
-
-#     signed_transaction = await self.create_bcs_signed_transaction(
-#         sender, TransactionPayload(payload)
-#     )
-#     return await self.submit_bcs_transaction(signed_transaction)
-
-#     return {"message": "Funds distributed"}
-
-async def distribute_funds(self, campaign_id=None):
+def distribute_funds(campaign_id):
     eligible_participants = check_likes_count(campaign_id)
+
+    campaign_id = int(campaign_id)
 
     message = {
         "campaign_id": campaign_id,
         "eligible_participants": eligible_participants["eligible_participants"],
         "number_of_likes": eligible_participants["number_of_likes"]
     }
+    print("Disbursing funds...")
 
-    url = "localhost:5001/campaign"
+    url = "http://localhost:5001/campaign"
     payload = json.dumps(message)
     headers = {'Content-Type': 'application/json'}
-    response = requests.request("POST", url, headers=headers, data=payload)
+    response = requests.post(url, headers=headers, data=payload)
 
     print(response.json())
 
@@ -226,7 +191,6 @@ def check_likes_count(campaign_id):
 
     return data
 
-
 class GetCampaignParticipants(Resource):
     def get(self):
         campaign_id = request.args.get("campaign_id")
@@ -236,7 +200,7 @@ class GetCampaignParticipants(Resource):
             return {"error": True, "data": response["data"]}, 400
         
         participants = response["data"]
-        print("participants: ", participants)
+        print("Participants: ", participants)
         final_data = []
 
         for participant in participants:
@@ -257,9 +221,6 @@ class GetCampaignParticipants(Resource):
 
             final_data.append(data)
 
-        print("final_data: ", final_data)
+        print("Final Data: ", final_data)
 
-        
         return {"error": False, "data": final_data}, 200
-
-print(distribute_funds("0001"))
