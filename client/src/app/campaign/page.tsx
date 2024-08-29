@@ -88,10 +88,7 @@ const Campaigns = () => {
       );
       const result: ApiResponse = await response.json();
 
-      // Parse the stringified JSON array directly
-      const parsedResult: Campaign[] = JSON.parse(result.data);
-
-      console.log(parsedResult);
+      const parsedResult: Campaign[] = result.data;
       setMyCampaigns(parsedResult);
       setLoading(false);
     } catch (error) {
