@@ -370,12 +370,12 @@ def get_tweet_details(tweet_id, auth):
 
 
 def get_liking_users(tweet_id):
-    auth = OAuth1(
-        os.environ.get("APTOS_CONSUMER_KEY"),
-        os.environ.get("APTOS_CONSUMER_SECRET"),
-        session.get("access_token"),
-        session.get("access_token_secret"),
-    )
+    auth=OAuth1Session(
+            APTOS_CONSUMER_KEY,
+            client_secret=APTOS_CONSUMER_SECRET,
+            resource_owner_key=os.environ.get("APTOS_ACCESS_TOKEN"),
+            resource_owner_secret=os.environ.get("APTOS_ACCESS_TOKEN_SECRET"),
+        )
 
     likes_url = f"https://api.twitter.com/2/tweets/{tweet_id}/liking_users"
     likes_headers = {"User-Agent": "v2LikingUsersPython"}
