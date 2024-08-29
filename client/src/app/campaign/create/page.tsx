@@ -15,7 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { FileUploader } from "react-drag-drop-files";
 import { useToast } from "@/components/ui/use-toast";
-
+import { useWallet, WalletName } from "@aptos-labs/wallet-adapter-react";
+import { AptosConfig, Aptos, Network } from "@aptos-labs/ts-sdk";
 import { addDays, format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 
@@ -49,6 +50,7 @@ import "@coreui/coreui-pro/dist/css/coreui.min.css";
 
 const hashtags = ["#hash1", "#hash2", "#hash3", "#hash4"];
 const Create = () => {
+  const { connect, disconnect, connected, account, signAndSubmitTransaction } = useWallet();
   const [file, setFile] = useState<any>(null);
   const [campaignName, setCampaignName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -256,6 +258,18 @@ const Create = () => {
           console.log(taskResult);
 
           if (!taskResult.error) {
+            const aptAmount = prizePool * 100000000;
+     const response = await signAndSubmitTransaction({
+       sender: account.address,
+      data: {
+        function: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53::stream::create_campaign",
+        typeArguments: ["0x1::aptos_coin::AptosCoin"],
+        functionArguments: [aptAmount]
+      },
+    });
+            
+            
+            //////////
             toast({
               description: "Campaign created successfully!",
             });

@@ -1,17 +1,17 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { useWallet , WalletName} from "@aptos-labs/wallet-adapter-react";
+import { useWallet, WalletName } from "@aptos-labs/wallet-adapter-react";
+import { AptosConfig, Aptos, Network } from "@aptos-labs/ts-sdk";
 const Navabar = () => {
 
-  const { connect, disconnect, account, connected } = useWallet();
+  const { connect, disconnect, connected, account, signAndSubmitTransaction } = useWallet();
   const [userAddress, setUserAddress] = React.useState("");
   const [publicKey, setPublicKey] = React.useState("null");
   const getAptosWallet = async () => {
     try {
-      
       // Change below to the desired wallet name instead of "Petra"
-       await connect("Petra" as WalletName<"Petra">); 
+      await connect("Petra" as WalletName<"Petra">); 
       console.log('Connected to wallet:', account);
     } catch (error) {
       console.error('Failed to connect to wallet:', error);
@@ -21,23 +21,29 @@ const Navabar = () => {
   }
   
   const createCampaign = async () => {
-  //   const config = new AptosConfig({ network: Network.TESTNET });
-  //   const aptos = new Aptos(config);
-  //   const modules = await aptos.getAccountModules({ accountAddress: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53" });
-  //   console.log(modules);
-  //   const transaction = await aptos.transaction.build.simple({
-  // sender: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53",
-  // data: {
-  //   function: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53::stream::create_campaign",
-  //   typeArguments: ["0x1::aptios_coin::AptosCoin"],
-  //   functionArguments: [10000000]
-  // },
-  //   });
-//     const pendingTransaction = await aptos.signAndSubmitTransaction({
-//   signer: publicKey,
-//   transaction,
-// });
-    // console.log(transaction);
+    console.log("hi", account);
+    const config = new AptosConfig({ network: Network.TESTNET });
+    const aptos = new Aptos(config);
+    const modules = await aptos.getAccountModules({ accountAddress: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53" });
+    console.log(modules);
+    if(account == null) {
+        throw new Error("Unable to find account to sign transaction")
+    }
+    const response = await signAndSubmitTransaction({
+      sender: account.address,
+      data: {
+        function: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53::stream::create_campaign",
+        typeArguments: ["0x1::aptos_coin::AptosCoin"],
+        functionArguments: [10000000]
+      },
+    });
+    // if you want to wait for transaction
+   
+ try {
+      await aptos.waitForTransaction({ transactionHash: response.hash });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   
