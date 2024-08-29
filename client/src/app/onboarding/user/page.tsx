@@ -31,7 +31,7 @@ const Onboarding = () => {
   const [isLoadingPage, setIsLoadingPage] = useState(isLoading);
 
   const handleLogin = async () => {
-    const walletAddress = account?.address; // Replace with actual wallet address logic
+    const walletAddress = "0x8393894894"; // Replace with actual wallet address logic
     try {
       // Redirect to Flask backend with wallet address
       window.location.href = `http://127.0.0.1:5000/login?wallet_address=${walletAddress}`;
@@ -64,7 +64,7 @@ const Onboarding = () => {
     const fetchTwitterStatus = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/twitter_status?wallet_address=${account?.address}`,
+          `http://localhost:5000/twitter_status?wallet_address=${"0x8393894894"}`,
           {
             method: "GET",
             redirect: "follow",
