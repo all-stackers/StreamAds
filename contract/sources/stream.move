@@ -20,7 +20,8 @@ module kenil::stream {
         sig: &signer,
         pool_amount: u64,
     ) acquires CampaignManager{
-        let manager = borrow_global_mut<CampaignManager>(signer::address_of(sig));
+
+        let manager = borrow_global_mut<CampaignManager>(@kenil);
         assert!(pool_amount > 0, 1); // Pool amount must be greater than 0
 
         let new_campaign = Campaign {
