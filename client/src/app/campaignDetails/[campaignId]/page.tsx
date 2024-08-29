@@ -29,27 +29,30 @@ import { Button } from "@/components/ui/button";
 import { set } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface Participant {
+  wallet_address: string;
+  instagram_post_id: string | null;
+  twitter_post_id: string | null;
+}
+
 interface CampaignDetails {
   campaign_id: string;
   campaign_name: string;
   campaign_description: string;
   company_name: string;
-  company_logo?: string;
-  company_twitter?: string;
-  company_website?: string;
-  media_url: string;
+  company_twitter: string;
+  company_website: string;
   start_time: string;
   end_time: string;
   payout_time: string;
   prize_pool: number;
   post: string;
   likes: string;
-  minimum_likes?: number;
+  minimum_likes: number;
   followers: string;
-  minimum_followers?: number;
-  participants?: string[];
-  media_type: string;
-  caption: string;
+  minimum_followers: number;
+  participants: Participant[];
+  task_id: string;
 }
 
 
@@ -112,8 +115,7 @@ const devfolio = ({ params }: { params: { campaignId: string } }) => {
         requestOptions
       );
       const result = await response.json();
-      const parsedResult = JSON.parse(result.data);
-      console.log(parsedResult);
+      const parsedResult = result.data;
       setCampaignDetails(parsedResult);
     } catch (error) {
       console.error(error);
