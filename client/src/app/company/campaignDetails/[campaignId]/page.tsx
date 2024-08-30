@@ -701,7 +701,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
                     </div>
                     <DialogTrigger asChild>
                       <Button className="bg-[#3770ff] hover:bg-[#2368fb] rounded-[10px] mr-[10px] px-[40px] font-bold text-[16px]">
-                        Participate
+                        See Participants
                       </Button>
                     </DialogTrigger>
                   </div>

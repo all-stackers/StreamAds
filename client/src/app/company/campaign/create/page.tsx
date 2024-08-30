@@ -50,7 +50,8 @@ import "@coreui/coreui-pro/dist/css/coreui.min.css";
 
 const hashtags = ["#hash1", "#hash2", "#hash3", "#hash4"];
 const Create = () => {
-  const { connect, disconnect, connected, account, signAndSubmitTransaction } = useWallet();
+  const { connect, disconnect, connected, account, signAndSubmitTransaction } =
+    useWallet();
   const [file, setFile] = useState<any>(null);
   const [campaignName, setCampaignName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -140,170 +141,180 @@ const Create = () => {
   const handleFinish = async () => {
     setLoading(true);
     try {
-      let upload = {
-        IpfsHash: "string",
-      };
-      if (selectedPlatform == "instagram") {
-        upload = await pinata.upload.file(file);
-      } else if (selectedPlatform == "twitter" && !retweet && tweetMedia) {
-        upload = await pinata.upload.file(tweetMedia);
-      } else {
-        upload.IpfsHash = "null";
-      }
-      console.log(upload);
-      console.log(upload.IpfsHash);
-      if (upload.IpfsHash) {
-        const imageUrl = `${process.env.NEXT_PUBLIC_PINATA_ENDPOINT}/ipfs/${upload.IpfsHash}`;
-        const currentDateTime = new Date();
-        const campaignDateTime = formatDateTime(
-          campaignDate ? campaignDate : currentDateTime,
-          campaignTime ? campaignTime : "00:00:00"
-        );
-        const payoutDateTime = formatDateTime(
-          payoutDate ? payoutDate : currentDateTime,
-          payoutTime ? payoutTime : "00:00:00"
-        );
-        console.log(campaignDate);
-        console.log(campaignTime);
-        // Prepare data for the second API call
-        const postData = {
-          campaign_name: campaignName,
-          company_name: "Aptos",
-          campaign_description: description,
-          start_time: formatDateTime(
-            currentDateTime,
-            currentDateTime.toTimeString()
-          ),
-          end_time: campaignDateTime,
-          payout_time: payoutDateTime,
-          prize_pool: prizePool,
-          post: "yes",
-          likes: likes ? "yes" : "no",
-          minimum_likes: likesCount,
-          followers: followers ? "yes" : "no",
-          minimum_followers: followersCount,
-        };
+      const aptAmount = prizePool * 100000000;
+      console.log(account?.address);
+      const response = await signAndSubmitTransaction({
+        sender: account.address,
+        data: {
+          function:
+            "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53::stream::create_campaign",
+          typeArguments: ["0x1::aptos_coin::AptosCoin"],
+          functionArguments: [aptAmount],
+        },
+      });
 
-        // Define the request options for the second API call
-        const postOptions: RequestInit = {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(postData),
-          redirect: "follow",
+      try {
+        let upload = {
+          IpfsHash: "string",
         };
-
-        // Perform the second fetch request
-        const postResponse = await fetch(
-          "http://localhost:5000/campaign",
-          postOptions
-        );
-        const postResult = await postResponse.json(); // Parse the response as JSON
-        console.log(postResult);
-        if (!postResult.error) {
-          const campaignId = postResult.data;
-          // Prepare data for the third API call
-          let postMediaData: {
-            campaign_id: any;
-            platform: string;
-            media_type?: string;
-            media_url?: string;
-            caption?: string;
-            tweet?: boolean;
-            tweet_text?: string;
-            tweet_media_url?: string;
-            retweet?: boolean;
-            retweet_url?: string;
-            quote_tweet?: boolean;
-            quote_tweet_url?: string;
-          } = {
-            campaign_id: campaignId,
-            platform: selectedPlatform,
+        if (selectedPlatform == "instagram") {
+          upload = await pinata.upload.file(file);
+        } else if (selectedPlatform == "twitter" && !retweet && tweetMedia) {
+          upload = await pinata.upload.file(tweetMedia);
+        } else {
+          upload.IpfsHash = "null";
+        }
+        console.log(upload);
+        console.log(upload.IpfsHash);
+        if (upload.IpfsHash) {
+          const imageUrl = `${process.env.NEXT_PUBLIC_PINATA_ENDPOINT}/ipfs/${upload.IpfsHash}`;
+          const currentDateTime = new Date();
+          const campaignDateTime = formatDateTime(
+            campaignDate ? campaignDate : currentDateTime,
+            campaignTime ? campaignTime : "00:00:00"
+          );
+          const payoutDateTime = formatDateTime(
+            payoutDate ? payoutDate : currentDateTime,
+            payoutTime ? payoutTime : "00:00:00"
+          );
+          console.log(campaignDate);
+          console.log(campaignTime);
+          // Prepare data for the second API call
+          const postData = {
+            campaign_name: campaignName,
+            company_name: "Aptos",
+            campaign_description: description,
+            start_time: formatDateTime(
+              currentDateTime,
+              currentDateTime.toTimeString()
+            ),
+            end_time: campaignDateTime,
+            payout_time: payoutDateTime,
+            prize_pool: prizePool,
+            post: "yes",
+            likes: likes ? "yes" : "no",
+            minimum_likes: likesCount,
+            followers: followers ? "yes" : "no",
+            minimum_followers: followersCount,
           };
-          if (selectedPlatform == "instagram") {
-            postMediaData.media_type = file.type.includes("video")
-              ? "video"
-              : "image";
-            postMediaData.media_url = imageUrl;
-            postMediaData.caption = caption;
-          } else {
-            if (retweet) {
-              postMediaData.retweet = retweet;
-              postMediaData.retweet_url = retweetUrl;
-              postMediaData.quote_tweet = quoteTweet;
-            } else {
-              postMediaData.tweet = true;
-              postMediaData.tweet_text = twitterText;
-              if (tweetMedia) {
-                postMediaData.tweet_media_url = imageUrl;
-              }
-            }
-          }
-
-          const postOptions2: RequestInit = {
+  
+          // Define the request options for the second API call
+          const postOptions: RequestInit = {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(postMediaData),
+            body: JSON.stringify(postData),
             redirect: "follow",
           };
-
-          const taskResponse = await fetch(
-            "http://localhost:5000/task",
-            postOptions2
+  
+          // Perform the second fetch request
+          const postResponse = await fetch(
+            "http://localhost:5000/campaign",
+            postOptions
           );
-          const taskResult = await taskResponse.json(); // Parse the response as JSON
-          console.log(taskResult);
-
-          if (!taskResult.error) {
-            const aptAmount = prizePool * 100000000;
-            console.log(account?.address)
-     const response = await signAndSubmitTransaction({
-       sender: account.address,
-      data: {
-        function: "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53::stream::create_campaign",
-        typeArguments: ["0x1::aptos_coin::AptosCoin"],
-        functionArguments: [aptAmount]
-      },
-    });
-            
-            
-            //////////
-            toast({
-              description: "Campaign created successfully!",
-            });
-
+          const postResult = await postResponse.json(); // Parse the response as JSON
+          console.log(postResult);
+          if (!postResult.error) {
+            const campaignId = postResult.data;
+            // Prepare data for the third API call
+            let postMediaData: {
+              campaign_id: any;
+              platform: string;
+              media_type?: string;
+              media_url?: string;
+              caption?: string;
+              tweet?: boolean;
+              tweet_text?: string;
+              tweet_media_url?: string;
+              retweet?: boolean;
+              retweet_url?: string;
+              quote_tweet?: boolean;
+              quote_tweet_url?: string;
+            } = {
+              campaign_id: campaignId,
+              platform: selectedPlatform,
+            };
+            if (selectedPlatform == "instagram") {
+              postMediaData.media_type = file.type.includes("video")
+                ? "video"
+                : "image";
+              postMediaData.media_url = imageUrl;
+              postMediaData.caption = caption;
+            } else {
+              if (retweet) {
+                postMediaData.retweet = retweet;
+                postMediaData.retweet_url = retweetUrl;
+                postMediaData.quote_tweet = quoteTweet;
+              } else {
+                postMediaData.tweet = true;
+                postMediaData.tweet_text = twitterText;
+                if (tweetMedia) {
+                  postMediaData.tweet_media_url = imageUrl;
+                }
+              }
+            }
+  
+            const postOptions2: RequestInit = {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(postMediaData),
+              redirect: "follow",
+            };
+  
+            const taskResponse = await fetch(
+              "http://localhost:5000/task",
+              postOptions2
+            );
+            const taskResult = await taskResponse.json(); // Parse the response as JSON
+            console.log(taskResult);
+  
+            if (!taskResult.error) {
+              //////////
+              toast({
+                description: "Campaign created successfully!",
+              });
+  
+              setLoading(false);
+              router.push("company/campaignDetails/" + campaignId);
+              console.log("Campaign created successfully!");
+            } else {
+              toast({
+                variant: "destructive",
+                description: "Error while adding task",
+              });
+            }
             setLoading(false);
-            router.push("/campaignDetails/" + campaignId);
-            console.log("Campaign created successfully!");
           } else {
             toast({
               variant: "destructive",
-              description: "Error while adding task",
+              description: "Error while creating campaign",
             });
           }
-          setLoading(false);
         } else {
           toast({
             variant: "destructive",
-            description: "Error while creating campaign",
+            description: "Error uploading file to Pinata",
           });
         }
-      } else {
+      } catch (error) {
+        console.error("Error uploading file to Pinata:", error);
         toast({
           variant: "destructive",
           description: "Error uploading file to Pinata",
         });
+        setLoading(false);
       }
+
     } catch (error) {
-      console.error("Error uploading file to Pinata:", error);
-      toast({
-        variant: "destructive",
-        description: "Error uploading file to Pinata",
-      });
-      setLoading(false);
+      console.error("Error in wallet", error);
+        toast({
+          variant: "destructive",
+          description: "Error in wallet transaction",
+        });
+        setLoading(false);
     }
   };
 
@@ -976,7 +987,8 @@ const Create = () => {
             type="submit"
             className="px-[40px] bg-blue-500 text-[16px] font-[400] hover:bg-blue-600"
             onClick={() => {
-              if (campaignDate && payoutDate && campaignDate <= payoutDate) {
+              console.log(campaignDate, payoutDate);
+              if (campaignDate && payoutDate) {
                 if (prizePool && prizePool > 0) {
                   setSteps(6);
                 } else {
