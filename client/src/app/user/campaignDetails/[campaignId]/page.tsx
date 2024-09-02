@@ -34,6 +34,7 @@ import { useRef } from "react";
 import axios from "axios";
 import TwitterPreview from "@/components/TwitterPreview";
 import Timer from "@/components/Timer";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 interface Participant {
   wallet_address: string;
@@ -90,6 +91,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
   const [twitterQuoteText, setTwitterQuoteText] = useState<string>("");
 
   const quoteTextRef = useRef("");
+  const { account } = useWallet();
 
   const highlightHashtags = (text: string) => {
     const regex = /#\w+/g;
@@ -141,7 +143,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
       media_url: campaignDetails?.task?.media_url,
       caption: campaignDetails?.task?.caption,
       campaign_id: campaignDetails?.task?.campaign_id,
-      wallet_address: "0xx14",
+      wallet_address: account?.address,
     };
 
     const requestOptions = {
@@ -186,7 +188,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
     const postData = {
       quote_text: quoteText,
       quote_tweet_id: quoteTweetId,
-      wallet_address: "0x8393894894",
+      wallet_address: account?.address,
     };
 
     const requestOptions = {
@@ -211,7 +213,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
         participatePost(
           result.tweet_id,
           campaignDetails?.task?.campaign_id ?? "",
-          "0x8393894894"
+          account?.address ?? ""
         );
       } else {
         setLoading(false);
@@ -238,7 +240,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
     const postData = {
       media_url: campaignDetails?.task?.tweet_media_url,
       tweet_text: campaignDetails?.task?.tweet_text,
-      wallet_address: "0x8393894894",
+      wallet_address: account?.address,
     };
 
     const requestOptions: RequestInit = {
@@ -262,7 +264,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
         participatePost(
           result.tweet_id,
           campaignDetails?.task?.campaign_id ?? "",
-          "0x8393894894"
+          account?.address ?? ""
         );
       } else {
         setLoading(false);
@@ -288,7 +290,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     const postData = {
       tweet_text: campaignDetails?.task?.tweet_text,
-      wallet_address: "0x8393894894",
+      wallet_address: account?.address,
     };
 
     const requestOptions: RequestInit = {
@@ -312,7 +314,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
         participatePost(
           result.tweet_id,
           campaignDetails?.task?.campaign_id ?? "",
-          "0x8393894894"
+          account?.address ?? ""
         );
       } else {
         setLoading(false);

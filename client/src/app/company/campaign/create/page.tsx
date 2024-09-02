@@ -141,10 +141,10 @@ const Create = () => {
   const handleFinish = async () => {
     setLoading(true);
     try {
-      const aptAmount = prizePool * 100000000;
+      const aptAmount = prizePool ? prizePool : 0 * 100000000;
       console.log(account?.address);
       const response = await signAndSubmitTransaction({
-        sender: account.address,
+        sender: account?.address,
         data: {
           function:
             "0xf0c37761c0d644014c98bec8255d5836f13b4120b9059a0dab21a49355dded53::stream::create_campaign",

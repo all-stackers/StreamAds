@@ -213,7 +213,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
         participatePost(
           result.tweet_id,
           campaignDetails?.task?.campaign_id ?? "",
-          "0x8393894894"
+          account?.address ?? ""
         );
       } else {
         setLoading(false);
@@ -264,7 +264,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
         participatePost(
           result.tweet_id,
           campaignDetails?.task?.campaign_id ?? "",
-          "0x8393894894"
+          account?.address ?? ""
         );
       } else {
         setLoading(false);
@@ -314,7 +314,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
         participatePost(
           result.tweet_id,
           campaignDetails?.task?.campaign_id ?? "",
-          "0x8393894894"
+          account?.address ?? ""
         );
       } else {
         setLoading(false);

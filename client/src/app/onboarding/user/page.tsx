@@ -66,7 +66,7 @@ const Onboarding = () => {
     const fetchTwitterStatus = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/twitter_status?wallet_address=${"0x8393894894"}`,
+          `http://localhost:5000/twitter_status?wallet_address=${account?.address}`,
           {
             method: "GET",
             redirect: "follow",
