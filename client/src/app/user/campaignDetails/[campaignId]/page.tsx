@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { ScaleLoader } from "react-spinners";
 import { useToast } from "@/components/ui/use-toast";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import {
@@ -89,7 +88,6 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
   const [steps, setSteps] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [twitterQuoteText, setTwitterQuoteText] = useState<string>("");
-  const {connected, account} = useWallet();
 
   const quoteTextRef = useRef("");
 
@@ -143,7 +141,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
       media_url: campaignDetails?.task?.media_url,
       caption: campaignDetails?.task?.caption,
       campaign_id: campaignDetails?.task?.campaign_id,
-      wallet_address: account?.address,
+      wallet_address: "0xx14",
     };
 
     const requestOptions = {
@@ -188,7 +186,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
     const postData = {
       quote_text: quoteText,
       quote_tweet_id: quoteTweetId,
-      wallet_address: account?.address,
+      wallet_address: "0x8393894894",
     };
 
     const requestOptions = {
@@ -240,7 +238,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
     const postData = {
       media_url: campaignDetails?.task?.tweet_media_url,
       tweet_text: campaignDetails?.task?.tweet_text,
-      wallet_address: account?.address,
+      wallet_address: "0x8393894894",
     };
 
     const requestOptions: RequestInit = {
@@ -290,7 +288,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     const postData = {
       tweet_text: campaignDetails?.task?.tweet_text,
-      wallet_address: account?.address,
+      wallet_address: "0x8393894894",
     };
 
     const requestOptions: RequestInit = {

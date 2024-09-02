@@ -278,7 +278,7 @@ const Create = () => {
               });
   
               setLoading(false);
-              router.push("company/campaignDetails/" + campaignId);
+              router.push("/campaignDetails/" + campaignId);
               console.log("Campaign created successfully!");
             } else {
               toast({

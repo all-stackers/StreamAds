@@ -15,10 +15,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { ScaleLoader } from "react-spinners";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 const Onboarding = () => {
   const { toast } = useToast();
-
+  const { connected, account } = useWallet();
   const [companyName, setCompanyName] = useState("");
   const [twitterHandle, setTwitterHandle] = useState("");
   const [websiteLink, setWebsiteLink] = useState("");
@@ -30,7 +31,7 @@ const Onboarding = () => {
   const [step, setStep] = useState(1);
 
   const handleLogin = async () => {
-    const walletAddress = "0x9882be3ey3e3823b"; // Replace with actual wallet address logic
+    const walletAddress = account?.address; // Replace with actual wallet address logic
     try {
       // Redirect to Flask backend with wallet address
       window.location.href = `http://127.0.0.1:5000/login?wallet_address=${walletAddress}`;
@@ -46,7 +47,7 @@ const Onboarding = () => {
 
     const raw = JSON.stringify({
       company_name: companyName,
-      company_wallet_address: "0x9882be3ey3e382s3b", // Replace with actual wallet address logic
+      company_wallet_address: account?.address, // Replace with actual wallet address logic
       company_twitter: twitterHandle,
       company_website: websiteLink,
     });

@@ -18,6 +18,7 @@ import { useWallet, WalletName } from "@aptos-labs/wallet-adapter-react";
 
 import { ScaleLoader } from "react-spinners";
 
+
 const Onboarding = () => {
   const { toast } = useToast();
   const { account, connect, connected, wallet, changeNetwork, isLoading } = useWallet();
@@ -29,7 +30,7 @@ const Onboarding = () => {
   const [isLoadingPage, setIsLoadingPage] = useState(isLoading);
 
   const handleLogin = async () => {
-    const walletAddress = "0x8393894894"; // Replace with actual wallet address logic
+    const walletAddress = account?.address; // Replace with actual wallet address logic
     try {
       // Redirect to Flask backend with wallet address
       window.location.href = `http://127.0.0.1:5000/login?wallet_address=${walletAddress}`;
