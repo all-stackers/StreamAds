@@ -63,11 +63,6 @@ Follow these steps to set up the development environment:
    ```bash
    npm install
    ```
-
-   **Install Node.js dependencies**:<br>
-   ```bash
-   npm install
-   ```
    
    **Install Python dependencies**:<br>
    ```bash
