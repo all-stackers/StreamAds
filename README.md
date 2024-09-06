@@ -2,6 +2,8 @@
 
 StreamAD is a cutting-edge platform designed to revolutionize the digital marketing landscape. Our blockchain-based solution allows companies to create and manage tweet promotion campaigns with unparalleled transparency and accountability. With StreamAD, influencers and communities can participate in campaigns, promote content, and earn rewards seamlessly.
 
+## Video Demo
+[![Video Thumbnail](https://github.com/user-attachments/assets/199eb531-541d-4ca5-b193-ece8d32d0b93)](https://www.youtube.com/watch?v=gbymwqqtynk)
 
 
 ## Workflow
@@ -42,7 +44,6 @@ To get started with StreamAD, ensure you have the following installed on your ma
 
 - **Node.js** (for running the frontend and backend JavaScript code)<br>
 - **Python** (for running the Flask backend)<br>
-- **Truffle** (for Ethereum smart contract development)<br>
 - **MetaMask** (for managing blockchain wallets)<br>
 - **Tweepy** (for Twitter API integration)<br>
 - **MongoDB** (or any other database for storing user and campaign data)<br>
