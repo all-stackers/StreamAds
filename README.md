@@ -3,7 +3,7 @@
 StreamAD is a cutting-edge platform designed to revolutionize the digital marketing landscape. Our blockchain-based solution allows companies to create and manage tweet promotion campaigns with unparalleled transparency and accountability. With StreamAD, influencers and communities can participate in campaigns, promote content, and earn rewards seamlessly.
 
 ## Video Demo
-[![Video Thumbnail](https://github.com/user-attachments/assets/199eb531-541d-4ca5-b193-ece8d32d0b93)](https://www.youtube.com/watch?v=gbymwqqtynk)
+[![Video Thumbnail](https://github.com/user-attachments/assets/199eb531-541d-4ca5-b193-ece8d32d0b93)](https://youtu.be/QaPS-H9S2cg)
 
 
 ## Workflow
