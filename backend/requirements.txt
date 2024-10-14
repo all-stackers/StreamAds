@@ -1,6 +1,6 @@
-Flask
-Flask_Cors
-flask_mongoengine
+Flask==2.2.3
+Flask_Cors==4.0.0
+flask_mongoengine==1.0.0
 Flask_RESTful
 flask-jwt-extended
 mongoengine
