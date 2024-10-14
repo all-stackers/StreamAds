@@ -4,6 +4,10 @@ const app = express();
 
 app.use(express.json());
 
+app.length('/ping', (req, res) => {
+    res.send('Pong!');
+});
+
 app.post('/campaign',async (req, res) => {
     const { campaign_id, eligible_participants, number_of_likes } = req.body;
     const config = new AptosConfig({ network: Network.TESTNET });

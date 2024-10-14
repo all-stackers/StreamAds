@@ -97,6 +97,11 @@ def testcronjob():
     return "Cron job is working"
 
 
+@app.route("/ping", methods=["GET"])
+def ping():
+    return jsonify({"message": "Pong!"})
+
+
 app.secret_key = os.urandom(24)
 
 # Twitter API credentials
