@@ -1,0 +1,16 @@
+Flask
+Flask_Cors
+flask_mongoengine
+Flask_RESTful
+flask-jwt-extended
+mongoengine
+pymongo
+python-dotenv
+werkzeug
+gunicorn
+cloudinary
+langchain_google_genai
+googletrans
+Flask-Mail
+httpx
+twilio
