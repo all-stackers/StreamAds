@@ -10,7 +10,7 @@ import { AptosConfig, Aptos, Network } from "@aptos-labs/ts-sdk";
 
 const Navabar = () => {
   const { account } = useWallet();
-  console.log(account)
+  console.log(account?.address)
   const router = useRouter();
   return (
     <div className="flex px-[50px] py-[20px] justify-center">
