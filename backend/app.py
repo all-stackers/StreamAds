@@ -207,15 +207,18 @@ def twitter_status():
 
     response = User.get_user_by_wallet_address(wallet_address)
     if response["error"]:
-        return f"Error getting user: {response['message']}"
+        # return f"Error getting user: {response['message']}"
+        new_user = User.add_user({"wallet_address": wallet_address})
+        return {"new": True}
 
+    # twitter token exists
     user = response.get("data")
     if user and user["oauth_token"] and user["oauth_token_secret"]:
         print("User is authenticated")
-        return {"status": True}
+        return {"new": False}
     else:
         print("User is not authenticated")
-        return {"status": False}
+        return {"new": True}
 
 
 def generate_oauth_signature(method, url, params):
@@ -610,4 +613,4 @@ def retweet():
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5001))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)

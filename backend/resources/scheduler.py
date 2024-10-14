@@ -41,7 +41,7 @@ def distribute_funds(campaign_id=None):
     }
     print("disbursing funds ...")
 
-    url = "localhost:5001/campaign"
+    url = "https://streamads-node-backend.onrender.com/campaign"
     payload = json.dumps(message)
     headers = {'Content-Type': 'application/json'}
     response = requests.request("POST", url, headers=headers, data=payload)

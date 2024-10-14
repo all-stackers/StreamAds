@@ -42,6 +42,7 @@ class Campaign(db.Document):
     def get_all_campaigns(cls):
         try:
             campaigns = cls.objects()
+            print(campaigns)
             return {'error': False, 'data': campaigns}
 
         except Exception as e:

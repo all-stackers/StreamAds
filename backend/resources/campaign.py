@@ -105,7 +105,8 @@ class Campaign(Resource):
             if response["error"]:
                 return {"error": True, "data": response["data"]}, 400
             
-            campaign_data = json.loads(response["data"].to_json())
+            campaign_data = response["data"].to_json()
+            campaign_data = json.loads(campaign_data)
 
             data = []
             for campaign in campaign_data:
@@ -152,7 +153,7 @@ def distribute_funds(campaign_id):
     }
     print("Disbursing funds...")
 
-    url = "http://localhost:5001/campaign"
+    url = "https://streamads-node-backend.onrender.com/campaign"
     payload = json.dumps(message)
     headers = {'Content-Type': 'application/json'}
     response = requests.post(url, headers=headers, data=payload)

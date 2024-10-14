@@ -63,7 +63,7 @@ const Campaigns = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/campaign",
+        "http://localhost:5001/campaign",
         requestOptions
       );
       const result: ApiResponse = await response.json();
@@ -83,7 +83,7 @@ const Campaigns = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/campaign?company_name=Aptos",
+        "http://localhost:5001/campaign?company_name=Aptos",
         requestOptions
       );
       const result: ApiResponse = await response.json();

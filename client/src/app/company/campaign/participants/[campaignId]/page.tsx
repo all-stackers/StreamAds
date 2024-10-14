@@ -63,7 +63,7 @@ const Participants = ({ params }: { params: { campaignId: string } }) => {
     try {
       // Fixed URL: removed extra quotes
       const response = await fetch(
-        `http://127.0.0.1:5000/campaign/participants?campaign_id=${campaignId}`,
+        `http://localhost:5001/campaign/participants?campaign_id=${campaignId}`,
         requestOptions
       );
       const result: CampaignDetails = await response.json();

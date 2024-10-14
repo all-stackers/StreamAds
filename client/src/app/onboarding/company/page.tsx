@@ -34,7 +34,7 @@ const Onboarding = () => {
     const walletAddress = account?.address; // Replace with actual wallet address logic
     try {
       // Redirect to Flask backend with wallet address
-      window.location.href = `http://127.0.0.1:5000/login?wallet_address=${walletAddress}`;
+      window.location.href = `http://localhost:5001/login?wallet_address=${walletAddress}`;
     } catch (error) {
       console.error("Error initiating login:", error);
     }
@@ -53,7 +53,7 @@ const Onboarding = () => {
     });
 
     try {
-      const response = await fetch("http://localhost:5000/company", {
+      const response = await fetch("http://localhost:5001/company", {
         method: "POST",
         headers: myHeaders,
         body: raw,

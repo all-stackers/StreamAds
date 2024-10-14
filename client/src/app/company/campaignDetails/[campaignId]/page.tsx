@@ -118,7 +118,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/campaign?campaign_id=${campaignId}`,
+        `http://localhost:5001/campaign?campaign_id=${campaignId}`,
         requestOptions
       );
       const result = await response.json();
@@ -155,7 +155,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:5000/posts",
+        "http://localhost:5001/posts",
         requestOptions
       );
       const result = await response.json();
@@ -200,7 +200,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/quote-tweet",
+        "http://localhost:5001/quote-tweet",
         requestOptions
       );
       const result = await response.json();
@@ -252,7 +252,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/tweet_with_media",
+        "http://localhost:5001/tweet_with_media",
         requestOptions
       );
       const result = await response.json();
@@ -302,7 +302,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/tweet",
+        "http://localhost:5001/tweet",
         requestOptions
       );
       const result = await response.json();
@@ -355,7 +355,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/campaign/add_participant",
+        "http://localhost:5001/campaign/add_participant",
         requestOptions
       );
       const result = await response.json();

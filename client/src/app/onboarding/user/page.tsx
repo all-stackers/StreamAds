@@ -33,7 +33,7 @@ const Onboarding = () => {
     const walletAddress = account?.address; // Replace with actual wallet address logic
     try {
       // Redirect to Flask backend with wallet address
-      window.location.href = `http://127.0.0.1:5000/login?wallet_address=${walletAddress}`;
+      window.location.href = `http://localhost:5001/login?wallet_address=${walletAddress}`;
     } catch (error) {
       console.error("Error initiating login:", error);
     }
@@ -66,7 +66,7 @@ const Onboarding = () => {
     const fetchTwitterStatus = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/twitter_status?wallet_address=${account?.address}`,
+          `http://localhost:5001/twitter_status?wallet_address=${account?.address}`,
           {
             method: "GET",
             redirect: "follow",
@@ -74,7 +74,7 @@ const Onboarding = () => {
         );
         const data = await response.json();
         console.log("Data:", data);
-        setTwitterStatus(data.status);
+        setTwitterStatus(data.new);
       } catch (error) {
         console.error("Error fetching Twitter status:", error);
       }
