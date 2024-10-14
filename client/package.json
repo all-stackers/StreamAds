@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@aptos-labs/ts-sdk": "^1.27.1",
+    "@aptos-labs/wallet-adapter-ant-design": "^3.0.15",
     "@aptos-labs/wallet-adapter-react": "^3.6.0",
     "@coreui/coreui-pro": "^5.4.0",
     "@coreui/react-pro": "^5.5.0",
@@ -39,6 +40,7 @@
     "graphql-request": "^7.1.0",
     "lucide-react": "^0.435.0",
     "next": "^14.2.7",
+    "petra-plugin-wallet-adapter": "^0.4.5",
     "pinata": "^0.4.0",
     "react": "^18",
     "react-checkbox": "^0.1.0",
