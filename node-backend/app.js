@@ -4,7 +4,7 @@ const app = express();
 
 app.use(express.json());
 
-app.length('/ping', (req, res) => {
+app.get('/ping', (req, res) => {
     res.send('Pong!');
 });
 
