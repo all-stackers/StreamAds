@@ -80,6 +80,7 @@ const Campaigns = () => {
     }
   };
   
+  console.log(allCampaigns);
 
   const fetchMyCampaigns = async () => {
     // const requestOptions: RequestInit = {
@@ -113,7 +114,11 @@ const Campaigns = () => {
       const response = await fetch(url, requestOptions);
       const result = await response.json();
       const myCampaignsId = result.data.participated_campaigns;
-      const myCampaigns = allCampaigns.filter((campaign) => myCampaignsId.includes(campaign.campaign_id));
+      console.log("My Campaigns Id:", myCampaignsId);
+      // myCampaignsId is like this: [{campaign_id: "1"}, {campaign_id: "2"}]
+      const myCampaigns = myCampaignsId.map((campaignId: {campaign_id: string}) => {
+        return allCampaigns.find((campaign) => campaign.campaign_id === campaignId.campaign_id);
+      });
       setMyCampaigns(myCampaigns);
       setLoading(false);
     } catch (error) {
@@ -341,7 +346,7 @@ const Campaigns = () => {
               ):
               myCampaigns.map((campaign) => (
                 <Card
-                  key={campaign.campaign_id}
+                  key={campaign?.campaign_id}
                   className="px-[20px] py-[10px]"
                 >
                   <div className="flex justify-between items-center pr-[20px]">

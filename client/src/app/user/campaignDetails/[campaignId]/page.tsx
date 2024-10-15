@@ -89,6 +89,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
   const [steps, setSteps] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [twitterQuoteText, setTwitterQuoteText] = useState<string>("");
+  const [participated, setParticipated] = useState<boolean>(false);
 
   const quoteTextRef = useRef("");
   const { account } = useWallet();
@@ -111,6 +112,8 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
   >(undefined);
 
   const checkIfUserParticipated = () => {
+    console.log(account?.address);
+    console.log(campaignDetails?.participants);
     if(account?.address && campaignDetails?.participants) {
       return campaignDetails.participants.some(
         (participant) => participant.wallet_address === account.address
@@ -218,8 +221,9 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
       if (!result.error) {
         toast({
-          description: result.msg,
+          description: "Tweet posted successfully.",
         });
+        setParticipated(true);
         participatePost(
           result.tweet_id,
           campaignDetails?.task?.campaign_id ?? "",
@@ -284,6 +288,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
         toast({
           description: result.msg + ` Tweet ID: ${result.tweet_id}`,
         });
+        setParticipated(true);
         participatePost(
           result.tweet_id,
           campaignDetails?.task?.campaign_id ?? "",
@@ -345,6 +350,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
         toast({
           description: result.msg + ` Tweet ID: ${result.tweet_id}`,
         });
+        setParticipated(true);
         participatePost(
           result.tweet_id,
           campaignDetails?.task?.campaign_id ?? "",
@@ -632,6 +638,12 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
     }
   }, [params.campaignId]);
 
+  useEffect(() => {
+    if (campaignDetails) {
+      setParticipated(checkIfUserParticipated());
+    }
+  }, [campaignDetails]);
+
   return (
     <Dialog>
       <div className="min-h-[calc(100vh-100px)] p-8">
@@ -747,7 +759,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
                     </div>
                     {account?.address ? 
                     <div>
-                    {checkIfUserParticipated() 
+                    {participated 
                       ? 
                       <Button className="bg-gray-500 rounded-[10px] px-[40px] font-bold text-[16px]">
                       Already participated
@@ -893,7 +905,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
               <div className="flex flex-row items-center justify-center">
               {account?.address ? 
                     <div>
-                    {checkIfUserParticipated() 
+                    {participated 
                       ? 
                       <Button className="bg-gray-500 rounded-[10px] px-[40px] font-bold text-[16px]">
                       Already participated

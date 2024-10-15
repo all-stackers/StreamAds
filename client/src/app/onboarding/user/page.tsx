@@ -17,6 +17,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useWallet, WalletName } from "@aptos-labs/wallet-adapter-react";
 
 import { ScaleLoader } from "react-spinners";
+import { useRouter } from "next/navigation";
 
 
 const Onboarding = () => {
@@ -28,6 +29,7 @@ const Onboarding = () => {
   const [twitterStatus, setTwitterStatus] = useState(false); // To store the fetched data
   const [loading, setLoading] = useState(false);
   const [isLoadingPage, setIsLoadingPage] = useState(isLoading);
+  const router = useRouter();
 
   const handleLogin = async () => {
     const walletAddress = account?.address; // Replace with actual wallet address logic
@@ -279,7 +281,8 @@ const Onboarding = () => {
             <CardFooter className="flex justify-center">
               <button
                 className="bg-blue-600 hover:bg-blue-700 w-[150px] text-white font-[600] py-2 rounded-lg w-full mt-4"
-                onClick={() => setStep(3)}
+                // onClick={() => setStep(3)}
+                onClick={() => router.push("/user/campaign")}
               >
                 Next
               </button>
