@@ -5,7 +5,7 @@ const twitterAuth = () => {
   const handleLogin = async () => {
     try {
       // Redirect to your Flask backend for Twitter OAuth
-      window.location.href = 'http://localhost:5001/login'; // Adjust URL if your backend is hosted elsewhere
+      window.location.href = 'https://streamads-python-backend.onrender.com/login'; // Adjust URL if your backend is hosted elsewhere
     } catch (error) {
       console.error('Error initiating login:', error);
     }

@@ -110,6 +110,15 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
     CampaignDetails | undefined
   >(undefined);
 
+  const checkIfUserParticipated = () => {
+    if(account?.address && campaignDetails?.participants) {
+      return campaignDetails.participants.some(
+        (participant) => participant.wallet_address === account.address
+      );
+    }
+    return false;
+  }
+
   const getCampaignDetails = async (campaignId: string): Promise<void> => {
     const requestOptions: RequestInit = {
       method: "GET",
@@ -118,7 +127,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        `http://localhost:5001/campaign?campaign_id=${campaignId}`,
+        `https://streamads-python-backend.onrender.com/campaign?campaign_id=${campaignId}`,
         requestOptions
       );
       const result = await response.json();
@@ -155,7 +164,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        "http://localhost:5001/posts",
+        "https://streamads-python-backend.onrender.com/posts",
         requestOptions
       );
       const result = await response.json();
@@ -200,7 +209,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        "http://localhost:5001/quote-tweet",
+        "https://streamads-python-backend.onrender.com/quote-tweet",
         requestOptions
       );
       const result = await response.json();
@@ -215,12 +224,25 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
           campaignDetails?.task?.campaign_id ?? "",
           account?.address ?? ""
         );
+
       } else {
         setLoading(false);
         toast({
           variant: "destructive",
           description: result.msg,
+
         });
+        const response = await fetch("https://streamads-python-backend.onrender.com/user/delete_twitter_info", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            wallet_address: account?.address,
+          }),
+        });
+
+        router.push("/onboarding/user");
       }
     } catch (error) {
       setLoading(false);
@@ -252,7 +274,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        "http://localhost:5001/tweet_with_media",
+        "https://streamads-python-backend.onrender.com/tweet_with_media",
         requestOptions
       );
       const result = await response.json();
@@ -285,6 +307,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
   const handleTwitterPost = async () => {
     setLoading(true);
+    
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
@@ -302,7 +325,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        "http://localhost:5001/tweet",
+        "https://streamads-python-backend.onrender.com/tweet",
         requestOptions
       );
       const result = await response.json();
@@ -355,7 +378,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
     try {
       const response = await fetch(
-        "http://localhost:5001/campaign/add_participant",
+        "https://streamads-python-backend.onrender.com/campaign/add_participant",
         requestOptions
       );
       const result = await response.json();
@@ -701,11 +724,36 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
                         </p>
                       </div>
                     </div>
-                    <DialogTrigger asChild>
-                      <Button className="bg-[#3770ff] hover:bg-[#2368fb] rounded-[10px] mr-[10px] px-[40px] font-bold text-[16px]">
-                        See Participants
+                    {account?.address ? 
+                    <div>
+                    {checkIfUserParticipated() 
+                      ? 
+                      <Button className="bg-gray-500 rounded-[10px] px-[40px] font-bold text-[16px]">
+                      Already participated
+                    </Button>
+                      :
+                      (
+                        <DialogTrigger asChild>
+                          <Button className="bg-[#3770ff] hover:bg-[#2368fb] rounded-[10px] px-[40px] font-bold text-[16px]">
+                            Participate
+                          </Button>
+                        </DialogTrigger>
+                      )
+                  }
+                  </div>
+                  :
+                    (
+                      <Button className="bg-[#3770ff] hover:bg-[#2368fb] rounded-[10px] px-[40px] font-bold text-[16px]" 
+                      onClick={() => {
+                        toast({
+                          variant: "destructive",
+                          description: "Please connect your wallet",
+                        });
+                    }}>
+                        Participate
                       </Button>
-                    </DialogTrigger>
+                    )
+                    }
                   </div>
                 </CardFooter>
               </Card>
@@ -822,11 +870,37 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
                 )}
               </ul>
               <div className="flex flex-row items-center justify-center">
-                <DialogTrigger asChild>
-                  <Button className="bg-[#3770ff] hover:bg-[#2368fb] rounded-[10px] px-[40px] font-bold text-[16px]">
-                    Participate
-                  </Button>
-                </DialogTrigger>
+              {account?.address ? 
+                    <div>
+                    {checkIfUserParticipated() 
+                      ? 
+                      <Button className="bg-gray-500 rounded-[10px] px-[40px] font-bold text-[16px]">
+                      Already participated
+                    </Button>
+                      :
+                      (
+                        <DialogTrigger asChild>
+                          <Button className="bg-[#3770ff] hover:bg-[#2368fb] rounded-[10px] px-[40px] font-bold text-[16px]">
+                            Participate
+                          </Button>
+                        </DialogTrigger>
+                      )
+                  }
+                  </div>
+                  :
+                    (
+                      <Button className="bg-[#3770ff] hover:bg-[#2368fb] rounded-[10px] px-[40px] font-bold text-[16px]" 
+                      onClick={() => {
+                        toast({
+                          variant: "destructive",
+                          description: "Please connect your wallet",
+                        });
+                    }}>
+                        Participate
+                      </Button>
+                    )
+                    }
+                
               </div>
             </div>
           </main>

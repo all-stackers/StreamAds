@@ -71,3 +71,12 @@ class User(db.Document):
             return {"error": False, "data": user.to_json()}
         except Exception as e:
             return {"error": True, "message": str(e)}
+
+    @classmethod
+    def delete_user_twitter_info(cls, wallet_address):
+        try:
+            user = cls.objects(wallet_address=wallet_address).first()
+            user.update(oauth_token=None, oauth_token_secret=None, oauth_verifier=None)
+            return {"error": False, "data": user.to_json()}
+        except Exception as e:
+            return {"error": True, "message": str(e)}

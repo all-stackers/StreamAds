@@ -8,7 +8,7 @@ const TwitterPreview = ({ url: urlProps }: { url: string }) => {
 
   const fetchPreview = async () => {
     try {
-      const response = await axios.get("http://localhost:5001/fetch-oembed", {
+      const response = await axios.get("https://streamads-python-backend.onrender.com/fetch-oembed", {
         params: { url },
       });
       console.log("Backend Response:", response.data);

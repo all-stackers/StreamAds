@@ -16,7 +16,7 @@ const Navabar = () => {
 
   useEffect(() => {
     if (account?.address) {
-      fetch(`http://localhost:5001/twitter_status?wallet_address=${account.address}`, {
+      fetch(`https://streamads-python-backend.onrender.com/twitter_status?wallet_address=${account.address}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json"

@@ -36,6 +36,19 @@ class Participants(Resource):
     def get(self):
         campaign_id = request.args.get('campaign_id')
 
+
+class ModifyUserTwitterInfo(Resource):
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('wallet_address', required=True, help='wallet_address is required')
+
+        args = parser.parse_args()
+        response = UserModel.delete_user_twitter_info(args['wallet_address'])
+
+        if response['error']:
+            return {'error': True, 'message': response['message']}
+        return response['data']
+
         
         
         

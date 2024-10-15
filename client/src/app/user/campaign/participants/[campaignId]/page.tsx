@@ -63,7 +63,7 @@ const Participants = ({ params }: { params: { campaignId: string } }) => {
     try {
       // Fixed URL: removed extra quotes
       const response = await fetch(
-        `http://localhost:5001/campaign/participants?campaign_id=${campaignId}`,
+        `https://streamads-python-backend.onrender.com/campaign/participants?campaign_id=${campaignId}`,
         requestOptions
       );
       const result: CampaignDetails = await response.json();

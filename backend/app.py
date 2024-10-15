@@ -29,6 +29,7 @@ from resources.campaign import (
 )
 from resources.task import Task
 from resources.scheduler import Scheduler
+from resources.user import ModifyUserTwitterInfo
 
 # from resources.insta_post import Posts
 # from resources.cloudinary import Cloudinary
@@ -56,6 +57,7 @@ api.add_resource(AddParticipantToCampaign, "/campaign/add_participant")
 api.add_resource(Task, "/task")
 api.add_resource(Scheduler, "/schedule_funds_distribution")
 api.add_resource(GetCampaignParticipants, "/campaign/participants")
+api.add_resource(ModifyUserTwitterInfo, "/user/delete_twitter_info")
 
 
 @app.route("/fetch-oembed", methods=["GET"])

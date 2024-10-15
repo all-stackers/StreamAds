@@ -62,7 +62,7 @@ const Campaigns = () => {
     };
   
     try {
-      const response = await fetch("http://localhost:5001/campaign", requestOptions);
+      const response = await fetch("https://streamads-python-backend.onrender.com/campaign", requestOptions);
       const result: ApiResponse = await response.json();
       const parsedResult: Campaign[] = JSON.parse(result.data); // Parse the JSON string
       setAllCampaigns(parsedResult);
@@ -80,7 +80,7 @@ const Campaigns = () => {
   
     try {
       const response = await fetch(
-        "http://localhost:5001/campaign?company_name=Aptos",
+        "https://streamads-python-backend.onrender.com/campaign?company_name=Aptos",
         requestOptions
       );
       const result: ApiResponse = await response.json();
