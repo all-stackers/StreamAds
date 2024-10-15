@@ -4,6 +4,10 @@ import { useRouter } from "next/navigation";
 import { WalletSelector } from "@aptos-labs/wallet-adapter-ant-design";
 import "@aptos-labs/wallet-adapter-ant-design/dist/index.css";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Blocks, Zap, Shield, Users, ArrowRight, CheckCircle, Twitter } from "lucide-react"
 
 const Navabar = () => {
   const { account } = useWallet();
@@ -34,46 +38,28 @@ const Navabar = () => {
   }, [account])
 
   return (
-    <div className="flex px-[50px] py-[20px] justify-center">
-      <div className="w-[90%] flex justify-between">
-        <div className="flex gap-x-[20px] items-center">
-          <div className="flex items-center gap-x-[10px]">
-            <img
-              className="h-[35px] rounded-full"
-              src="/assets/images/logo.png"
-              alt="logo"
-              onClick={() => router.push("/")}
-            />
-            <h1 className="font-[800] text-[20px] tracking-[.1em] text-[#273339]" onClick={() => router.push("/")}>
-              StreamAds
-            </h1>
-          </div>
-          <div className="flex gap-x-[15px]">
-            <span className="font-[600] text-gray-400 cursor-pointer" onClick={() => router.push("/")}>
-              Home
-            </span>
-            <span
-              className="font-[600] text-gray-400 cursor-pointer"
-              onClick={() => router.push("/user/campaign")}
-            >
-              Discover
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-x-[15px]">
-          <img
-            src="/assets/images/user.png"
-            alt="avatar"
-            className="h-[40px] rounded-full"
-          />
-         
-        
-  <WalletSelector />
-
-      
-        </div>
+      <div>
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b border-gray-200 bg-white sticky top-0 z-50">
+      <div className="flex items-center justify-center cursor-pointer">
+        <Blocks className="h-6 w-6 text-blue-600" />
+        <span className="ml-2 text-2xl font-bold text-gray-900" onClick={() => router.push("/")}>StreamAD</span>
       </div>
-    </div>
+      <nav className="ml-auto flex gap-4 sm:gap-6 mr-[60px]">
+        <Link className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors" href="/#features">
+          Features
+        </Link>
+        <Link className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors" href="/#how-it-works">
+          How It Works
+        </Link>
+        <Link className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors" href="/#faqs">
+          FAQs
+        </Link>
+      </nav>
+      <div className="ml-4" variant="default">
+       <WalletSelector />
+      </div>
+      </header>
+      </div>
   );
 };
 
