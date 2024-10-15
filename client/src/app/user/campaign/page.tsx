@@ -60,41 +60,48 @@ const Campaigns = () => {
       method: "GET",
       redirect: "follow",
     };
-
+  
     try {
       const response = await fetch(
         "http://localhost:5001/campaign",
         requestOptions
       );
       const result: ApiResponse = await response.json();
-      const parsedResult: Campaign[] = result.data;
+  
+      // Ensure the data is parsed as JSON if it's a string
+      const parsedResult: Campaign[] = typeof result.data === "string" ? JSON.parse(result.data) : result.data;
+  
       setAllCampaigns(parsedResult);
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch campaigns:", error);
     }
   };
+  
 
   const fetchMyCampaigns = async () => {
     const requestOptions: RequestInit = {
       method: "GET",
       redirect: "follow",
     };
-
+  
     try {
       const response = await fetch(
         "http://localhost:5001/campaign?company_name=Aptos",
         requestOptions
       );
       const result: ApiResponse = await response.json();
-
-      const parsedResult: Campaign[] = result.data;
+  
+      // Ensure the data is parsed as JSON if it's a string
+      const parsedResult: Campaign[] = typeof result.data === "string" ? JSON.parse(result.data) : result.data;
+  
       setMyCampaigns(parsedResult);
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch campaigns:", error);
     }
-  }
+  };
+  
 
   const handleTabsClick = (value: string) => {
     if (value === "my") {
