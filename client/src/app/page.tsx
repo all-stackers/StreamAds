@@ -28,7 +28,7 @@ export default function StreamADLandingPage() {
           </div>
           <div className="container px-4 md:px-6 relative z-10">
             <div className="flex flex-col lg:flex-row items-center justify-between space-y-12 lg:space-y-0 lg:space-x-12">
-              <div className="space-y-8 text-center lg:text-left">
+              <div className="space-y-8 lg:text-left">
                 <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
                   Revolutionize Your Digital Marketing
                 </h1>
