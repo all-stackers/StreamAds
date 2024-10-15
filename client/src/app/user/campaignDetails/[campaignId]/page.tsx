@@ -138,6 +138,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
     }
   };
 
+  // instagram
   const handlePost = async () => {
     setLoading(true);
     const myHeaders = new Headers();
@@ -294,6 +295,16 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
           variant: "destructive",
           description: result.msg,
         });
+        const response = await fetch("https://streamads-python-backend.onrender.com/user/delete_twitter_info", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            wallet_address: account?.address,
+          }),
+        });
+        router.push("/onboarding/user");
       }
     } catch (error) {
       setLoading(false);
@@ -345,6 +356,16 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
           variant: "destructive",
           description: result.msg,
         });
+        const response = await fetch("https://streamads-python-backend.onrender.com/user/delete_twitter_info", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            wallet_address: account?.address,
+          }),
+        });
+        router.push("/onboarding/user");
       }
     } catch (error) {
       setLoading(false);
