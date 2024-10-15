@@ -883,7 +883,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
               <h3 className="font-semibold mt-4 mb-2">Tasks:</h3>
               <ul className="list-disc list-inside mb-4">
                 {campaignDetails.post == "yes" && (
-                  <li>Post about the campaign on Instagram.</li>
+                  <li>Post about the campaign on Twitter.</li>
                 )}
                 {campaignDetails.likes == "yes" && (
                   <li>
@@ -894,7 +894,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
 
               <h3 className="font-semibold mt-4 mb-2">Eligibility:</h3>
               <ul className="list-disc list-inside mb-4">
-                <li>Should have an Instagram account</li>
+                <li>Should have an Twitter account</li>
                 {campaignDetails.followers && (
                   <li>
                     Should have minimum {campaignDetails.minimum_followers}{" "}

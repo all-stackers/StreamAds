@@ -44,7 +44,7 @@ const Navabar = () => {
         <Blocks className="h-6 w-6 text-blue-600" />
         <span className="ml-2 text-2xl font-bold text-gray-900" onClick={() => router.push("/")}>StreamAD</span>
       </div>
-      <nav className="ml-auto flex gap-4 sm:gap-6 mr-[60px]">
+      <nav className="ml-auto flex gap-4 sm:gap-6">
         <Link className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors" href="/#features">
           Features
         </Link>
@@ -54,8 +54,10 @@ const Navabar = () => {
         <Link className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors" href="/#faqs">
           FAQs
         </Link>
+        <Link className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors" href="/#">
+        </Link>
       </nav>
-      <div className="ml-4" variant="default">
+      <div className="">
        <WalletSelector />
       </div>
       </header>

@@ -37,7 +37,7 @@ export default function StreamADLandingPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
                   <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white" onClick={() => router.push("user/campaign/")}>
-                    Get Started
+                    Discover campaigns
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                   <Button size="lg" variant="outline">

@@ -277,9 +277,9 @@ const Create = () => {
                 description: "Campaign created successfully!",
               });
   
-              setLoading(false);
-              router.push("/campaignDetails/" + campaignId);
+              router.push("/company/campaignDetails/" + campaignId);
               console.log("Campaign created successfully!");
+              setLoading(false);
             } else {
               toast({
                 variant: "destructive",
