@@ -702,7 +702,7 @@ const CampaignDetails = ({ params }: { params: { campaignId: string } }) => {
                       </div>
                     </div>
                     <DialogTrigger asChild>
-                      <Button className="bg-[#3770ff] hover:bg-[#2368fb] rounded-[10px] mr-[10px] px-[40px] font-bold text-[16px]">
+                      <Button className="bg-[#3770ff] hover:bg-[#2368fb] rounded-[10px] mr-[10px] px-[40px] font-bold text-[16px]" onClick={() => router.push(`/company/campaign/participants/${params.campaignId}`)}>
                         See Participants
                       </Button>
                     </DialogTrigger>

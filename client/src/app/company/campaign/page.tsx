@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 interface Participant {
   wallet_address: string;
@@ -50,6 +51,7 @@ const Campaigns = () => {
   const [allCampaigns, setAllCampaigns] = useState<Campaign[]>([]);
   const [myCampaigns, setMyCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const { account } = useWallet();
 
   useEffect(() => {
     fetchCampaigns();
@@ -62,15 +64,23 @@ const Campaigns = () => {
     };
   
     try {
-      const response = await fetch("https://streamads-python-backend.onrender.com/campaign", requestOptions);
+      const response = await fetch(
+        "https://streamads-python-backend.onrender.com/campaign",
+        requestOptions
+      );
       const result: ApiResponse = await response.json();
-      const parsedResult: Campaign[] = JSON.parse(result.data); // Parse the JSON string
+  
+      // Ensure the data is parsed as JSON if it's a string
+      const parsedResult: Campaign[] = typeof result.data === "string" ? JSON.parse(result.data) : result.data;
+  
       setAllCampaigns(parsedResult);
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch campaigns:", error);
     }
   };
+
+  console.log(allCampaigns)
 
   const fetchMyCampaigns = async () => {
     const requestOptions: RequestInit = {
@@ -84,9 +94,11 @@ const Campaigns = () => {
         requestOptions
       );
       const result: ApiResponse = await response.json();
+      console.log(result)
       
       // Parse the JSON string into an array of Campaign objects
-      const parsedResult: Campaign[] = JSON.parse(result.data);
+      const parsedResult: Campaign[] = typeof result.data === "string" ? JSON.parse(result.data) : result.data;
+      console.log(parsedResult)
       setMyCampaigns(parsedResult);
       setLoading(false);
     } catch (error) {
@@ -166,7 +178,7 @@ const Campaigns = () => {
                 </>
               ) : (
                 <>
-                  {allCampaigns.map((campaign) => (
+                  {allCampaigns?.map((campaign) => (
                     <Card
                       key={campaign.campaign_id}
                       className="px-[20px] py-[10px]"
@@ -286,6 +298,13 @@ const Campaigns = () => {
                 </svg>
               </Button>
             </div>
+            {!loading && myCampaigns.length === 0 ?
+              <div className="flex flex-col justify-center mx-auto text-center mt-[50px]">
+                <img src="/assets/images/no_campaigns_logo.png" alt="empty" className="w-[200px] mx-auto" />
+                <div className=" text-[28px] font-bold text-[#404040]">No Campaigns</div> 
+                You have not created in any campaigns
+              </div>
+            :
             <div className="grid grid-cols-2 gap-y-[40px] gap-x-[40px] mt-[20px]">
               {loading ? (
                 <>
@@ -302,6 +321,7 @@ const Campaigns = () => {
                     ))}
                 </>
               ):
+
               myCampaigns.map((campaign) => (
                 <Card
                   key={campaign.campaign_id}
@@ -382,7 +402,7 @@ const Campaigns = () => {
                   </CardFooter>
                 </Card>
               ))}
-            </div>
+            </div>}
           </TabsContent>
         </div>
       </Tabs>

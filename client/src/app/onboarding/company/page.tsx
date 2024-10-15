@@ -16,6 +16,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { ScaleLoader } from "react-spinners";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { useRouter } from "next/navigation";
+import { WalletSelector } from "@aptos-labs/wallet-adapter-ant-design";
 
 const Onboarding = () => {
   const { toast } = useToast();
@@ -29,6 +31,8 @@ const Onboarding = () => {
   const [loading, setLoading] = useState(false);
 
   const [step, setStep] = useState(1);
+
+  const router = useRouter()
 
   const handleLogin = async () => {
     const walletAddress = account?.address; // Replace with actual wallet address logic
@@ -64,12 +68,18 @@ const Onboarding = () => {
       console.log(result);
     } catch (error) {
       console.error("Error:", error);
+      router.push("/company/campaign")
     } finally {
       setLoading(false); // Hide loading state
     }
   };
 
   useEffect(() => {}, []); // Add checkedWallet as a dependency
+
+  useEffect(() => {
+    if(account?.address) 
+      setStep(2);
+  }, [account?.address])
 
   return (
     <div className="min-h-[calc(100vh-100px)] bg-[#f5f7f7] flex flex-col justify-center items-center">
@@ -92,7 +102,7 @@ const Onboarding = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-y-[15px]">
-              <h1 className="text-[18px] font-[600]">Choose Wallet</h1>
+              <h1 className="text-[18px] font-[600]">Supported Wallets</h1>
               <div className="grid grid-cols-3 gap-4">
                 <div
                   className={`flex flex-col cursor-pointer items-center justify-center gap-y-[5px] p-2 bg-white border border-gray-200 rounded-lg hover:shadow-md ${
@@ -190,12 +200,13 @@ const Onboarding = () => {
                   </div>
                 </div>
                 <div className="flex justify-center w-full">
-                  <button
+                  {/* <button
                     className="bg-blue-600 hover:bg-blue-700 w-[200px] text-white font-[600] py-2 rounded-lg w-full mt-4"
                     onClick={() => setStep(2)}
-                  >
-                    Connect Wallet
-                  </button>
+                  > */}
+                    {/* Connect Wallet */}
+                    <WalletSelector />
+                  {/* </button> */}
                 </div>
               </div>
             </CardFooter>
@@ -260,7 +271,8 @@ const Onboarding = () => {
             <CardFooter className="flex justify-center">
               <button
                 className="bg-blue-600 hover:bg-blue-700 w-[150px] text-white font-[600] py-2 rounded-lg w-full mt-4"
-                onClick={handleCompanyDetails}
+                // onClick={handleCompanyDetails}
+                onClick={() => {router.push("/company/campaign")}}
               >
                 {loading ? (
                   <ScaleLoader color="#fff" loading={loading} />

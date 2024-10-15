@@ -36,12 +36,13 @@ export default function StreamADLandingPage() {
                   StreamAD offers blockchain-powered tweet promotion campaigns with unparalleled transparency and accountability.
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
-                  <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white" onClick={() => router.push("user/campaign/")}>
-                    Discover campaigns
+                  <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white" onClick={() => router.push("onboarding/company")}>
+                    Company
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
-                  <Button size="lg" variant="outline">
-                    Learn More
+                  <Button size="lg" variant="outline" onClick={() => router.push("/user/campaign")}>
+                    Influencers
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </div>
               </div>
