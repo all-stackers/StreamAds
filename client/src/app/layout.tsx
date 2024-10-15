@@ -27,7 +27,7 @@ export default function RootLayout({
 
     <html lang="en">
       <body className={inter.className}>
-        <Navabar />
+  
         <main>{children}</main>
         <Toaster />
       </body>
