@@ -20,6 +20,7 @@ import requests
 
 from resources.company import Company
 from models.user import User
+from resources.user import User as UserResource
 
 # from resources.user import User
 from resources.campaign import (
@@ -46,7 +47,7 @@ app.config["MONGODB_HOST"] = os.getenv("FLASK_MONGODB_URI")
 db.init_app(app)
 
 api.add_resource(Company, "/company")
-# api.add_resource(User, '/user')
+api.add_resource(UserResource, '/user')
 api.add_resource(Campaign, "/campaign")
 api.add_resource(AddParticipantToCampaign, "/campaign/add_participant")
 # api.add_resource(Posts,'/posts')

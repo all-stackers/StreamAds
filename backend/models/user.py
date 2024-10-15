@@ -59,13 +59,12 @@ class User(db.Document):
             return {"error": True, "message": str(e)}
 
     @classmethod
-    def add_participated_campaign(cls, wallet_address, campaign_id, instagram_post_id):
+    def add_participated_campaign(cls, wallet_address, campaign_id):
         try:
             user = cls.objects(wallet_address=wallet_address).first()
             user.update(
                 push__participated_campaigns={
-                    "campaign_id": campaign_id,
-                    "instagram_post_id": instagram_post_id,
+                    "campaign_id": campaign_id
                 }
             )
             return {"error": False, "data": user.to_json()}

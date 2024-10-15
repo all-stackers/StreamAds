@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 
 interface Participant {
   wallet_address: string;
@@ -50,6 +51,7 @@ const Campaigns = () => {
   const [allCampaigns, setAllCampaigns] = useState<Campaign[]>([]);
   const [myCampaigns, setMyCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const { account } = useWallet();
 
   useEffect(() => {
     fetchCampaigns();
@@ -80,26 +82,44 @@ const Campaigns = () => {
   
 
   const fetchMyCampaigns = async () => {
+    // const requestOptions: RequestInit = {
+    //   method: "GET",
+    //   redirect: "follow",
+    // };
+  
+    // try {
+    //   const response = await fetch(
+    //     "https://streamads-python-backend.onrender.com/campaign?company_name=Aptos",
+    //     requestOptions
+    //   );
+    //   const result: ApiResponse = await response.json();
+  
+    //   // Ensure the data is parsed as JSON if it's a string
+    //   const parsedResult: Campaign[] = typeof result.data === "string" ? JSON.parse(result.data) : result.data;
+  
+    //   setMyCampaigns(parsedResult);
+    //   setLoading(false);
+    // } catch (error) {
+    //   console.error("Failed to fetch campaigns:", error);
+    // }
+
     const requestOptions: RequestInit = {
       method: "GET",
-      redirect: "follow",
+      redirect: "follow"
     };
-  
+
+    const url = `https://streamads-python-backend.onrender.com/user?wallet_address=${account?.address}`;
     try {
-      const response = await fetch(
-        "https://streamads-python-backend.onrender.com/campaign?company_name=Aptos",
-        requestOptions
-      );
-      const result: ApiResponse = await response.json();
-  
-      // Ensure the data is parsed as JSON if it's a string
-      const parsedResult: Campaign[] = typeof result.data === "string" ? JSON.parse(result.data) : result.data;
-  
-      setMyCampaigns(parsedResult);
+      const response = await fetch(url, requestOptions);
+      const result = await response.json();
+      const myCampaignsId = result.data.participated_campaigns;
+      const myCampaigns = allCampaigns.filter((campaign) => myCampaignsId.includes(campaign.campaign_id));
+      setMyCampaigns(myCampaigns);
       setLoading(false);
     } catch (error) {
-      console.error("Failed to fetch campaigns:", error);
+      console.error("Failed to fetch my campaigns:", error);
     }
+
   };
   
 
@@ -145,7 +165,7 @@ const Campaigns = () => {
                 handleTabsClick("my");
               }}
             >
-              MY CAMPAIGN
+              PARTICIPATED CAMPAIGNS
             </TabsTrigger>
           </TabsList>
         </div>
@@ -264,14 +284,16 @@ const Campaigns = () => {
                 </>
               )}
             </div>
-          </TabsContent>
+          </TabsContent> 
           <TabsContent value="my">
+            {account?.address ? 
+            <>
             <div className="flex gap-x-[15px] items-center">
               <h1 className="min-w-fit font-[800] text-[30px] text-[#273339]">
                 My Campaigns
               </h1>
               <span className="w-full border-[1px]"></span>
-              <Button
+              {/* <Button
                 className="flex items-center gap-x-[10px] text-[16px] text-[#3770ff] font-[500] bg-[#b3ceff] rounded-[10px] hover:bg-blue-500 hover:text-white"
                 onClick={() => {
                   router.push("/user/campaign/create");
@@ -292,9 +314,16 @@ const Campaigns = () => {
                     d="M12 4.5v15m7.5-7.5h-15"
                   />
                 </svg>
-              </Button>
+              </Button> */}
             </div>
-            <div className="grid grid-cols-2 gap-y-[40px] gap-x-[40px] mt-[20px]">
+            {!loading && myCampaigns.length === 0 ?
+              <div className="flex flex-col justify-center mx-auto text-center mt-[50px]">
+                <img src="/assets/images/no_campaigns_logo.png" alt="empty" className="w-[200px] mx-auto" />
+                <div className=" text-[28px] font-bold text-[#404040]">No Campaigns</div> 
+                You have not participated in any campaigns
+              </div>
+            :
+              <div className="grid grid-cols-2 gap-y-[40px] gap-x-[40px] mt-[20px]">
               {loading ? (
                 <>
                   {Array(4)
@@ -390,7 +419,15 @@ const Campaigns = () => {
                   </CardFooter>
                 </Card>
               ))}
+            </div>}
+            </>
+            :
+            <div className="flex flex-col justify-center mx-auto text-center mt-[50px]">
+              <img src="/assets/images/login_first_logo.png" alt="empty" className="w-[200px] mx-auto" />
+              <div className=" text-[28px] font-bold text-[#404040]">Connect your wallet</div> 
+              to see participated campaigns
             </div>
+            }
           </TabsContent>
         </div>
       </Tabs>

@@ -139,6 +139,11 @@ class AddParticipantToCampaign(Resource):
         if response["error"]:
             return {"error": True, "data": response["data"]}, 400
         
+        # add campaign_id to the participant's participated list
+        response = UserModel.add_participated_campaign(args["wallet_address"], campaign_id)
+        if response["error"]:
+            return {"error": True, "data": response["data"]}, 400
+        
         return {"error": False, "data": response["data"]}, 200
     
 def distribute_funds(campaign_id):
