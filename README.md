@@ -107,10 +107,6 @@ Follow these steps to set up the development environment:
 
 <br>
 
-## 📜 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.<br>
-<br>
-
 ## 🗨️ Acknowledgments
 - ***Open-Source Community***: Special thanks to the open-source community for their invaluable tools and libraries.<br>
 - ***Beta Testers***: Thanks to all the beta testers for their feedback.<br>
